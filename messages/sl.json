@@ -69,6 +69,7 @@
   "dashboard": {
     "welcome": "Pozdravljeni",
     "progressLabel": "izpolnjeno",
+    "noRequirements": "Trenutno ni odprtih zahtev",
     "openGapsTitle": "Odprte vrzeli",
     "openGapsSubtitle": "Podatki, ki jih moramo še pridobiti.",
     "allDone": "Vse potrebne podatke ste že zagotovili.",

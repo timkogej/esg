@@ -20,7 +20,7 @@ export function BottomBar() {
   const moreActive = pathname.startsWith('/settings') || pathname.startsWith('/notifications');
 
   return (
-    <nav className="glass-bar fixed inset-x-0 bottom-0 z-40 flex h-16 items-stretch pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav className="glass-bar fixed inset-x-0 bottom-0 z-40 flex h-[calc(4rem+env(safe-area-inset-bottom))] items-stretch pb-[env(safe-area-inset-bottom)] md:hidden">
       {PRIMARY_NAV.map((item) => {
         const active = isActive(item.href);
         const Icon = item.icon;
@@ -29,12 +29,14 @@ export function BottomBar() {
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors',
-              active ? 'text-accent' : 'text-muted-foreground',
+              'relative flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+              active ? 'text-foreground' : 'text-muted-foreground',
             )}
+            aria-current={active ? 'page' : undefined}
           >
-            <span className={cn('rounded-full p-1', active && 'bg-accent text-white dark:text-accent-foreground')}>
-              <Icon className="h-5 w-5" />
+            <span className="relative p-1">
+              <Icon className={cn('h-5 w-5', active && 'text-brand-text')} />
+              {active && <span aria-hidden className="absolute -bottom-0.5 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full bg-brand" />}
             </span>
             {t(item.labelKey)}
           </Link>

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale, getMessages } from 'next-intl/server';
-import { inter, didot } from '@/lib/fonts';
-import { AmbientGlow } from '@/components/ambient-glow';
+import { inter } from '@/lib/fonts';
 import { Providers } from '@/components/providers';
 import { APP_NAME } from '@/lib/config';
 import './globals.css';
@@ -16,10 +15,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning className={`${inter.variable} ${didot.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={inter.variable}>
       <body className="min-h-dvh font-sans antialiased">
         <Providers locale={locale} messages={messages}>
-          <AmbientGlow />
           {children}
         </Providers>
       </body>

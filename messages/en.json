@@ -69,6 +69,7 @@
   "dashboard": {
     "welcome": "Welcome",
     "progressLabel": "complete",
+    "noRequirements": "There are currently no open requirements",
     "openGapsTitle": "Open gaps",
     "openGapsSubtitle": "Data we still need from you.",
     "allDone": "You've already provided all the required data.",

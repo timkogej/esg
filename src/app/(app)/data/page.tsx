@@ -201,7 +201,7 @@ export default function DataPage() {
       ) : done ? (
         <Card>
           <CardContent className="flex items-center gap-3 py-8">
-            <CheckCircle2 className="h-6 w-6 text-accent" />
+            <CheckCircle2 className="h-6 w-6 text-success" />
             <p className="text-sm">{t('attestSuccess')}</p>
           </CardContent>
         </Card>

@@ -28,11 +28,14 @@ export function MoreSheet({ active }: { active: boolean }) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         className={cn(
-          'flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium',
-          active ? 'text-accent' : 'text-muted-foreground',
+          'relative flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+          active ? 'text-foreground' : 'text-muted-foreground',
         )}
       >
-        <MoreHorizontal className="h-5 w-5" />
+        <span className="relative p-1">
+          <MoreHorizontal className={cn('h-5 w-5', active && 'text-brand-text')} />
+          {active && <span aria-hidden className="absolute -bottom-0.5 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full bg-brand" />}
+        </span>
         {t('more')}
       </SheetTrigger>
       <SheetContent side="bottom" className="p-0">
@@ -44,7 +47,7 @@ export function MoreSheet({ active }: { active: boolean }) {
             trigger={
               <button
                 type="button"
-                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium hover:bg-secondary"
+                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Bell className="h-5 w-5" />
                 {t('notifications')}
@@ -54,7 +57,7 @@ export function MoreSheet({ active }: { active: boolean }) {
           <Link
             href="/settings"
             onClick={() => setOpen(false)}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium hover:bg-secondary"
+            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Settings className="h-5 w-5" />
             {t('settings')}
@@ -68,7 +71,7 @@ export function MoreSheet({ active }: { active: boolean }) {
           <button
             type="button"
             onClick={() => void signOut()}
-            className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive hover:bg-secondary"
+            className="mt-2 flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <LogOut className="h-5 w-5" />
             {t('logout')}
