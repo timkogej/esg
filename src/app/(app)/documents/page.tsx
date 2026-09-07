@@ -195,91 +195,117 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-[1080px]">
       <PageHeader title={t('title')} subtitle={t('subtitle')} />
 
-      {/* Drag-and-drop zone + explicit file picker, both available at once. */}
-      {!locationsLoading && locations.length > 1 && (
-        <div className="mb-4 max-w-md">
-          <label htmlFor="document-location" className="mb-1.5 block text-sm font-medium">
-            {t('locationLabel')}
-          </label>
-          <SelectField
-            id="document-location"
-            value={selectedLocationId}
-            onChange={(event) => setSelectedLocationId(event.target.value)}
-            required
-            disabled={uploading}
-          >
-            <option value="">{t('locationPlaceholder')}</option>
-            {locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
-                {location.address ? ` - ${location.address}` : ''}
-              </option>
-            ))}
-          </SelectField>
-        </div>
-      )}
-
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (!uploadDisabled) setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        className={cn(
-          'flex min-h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-6 py-7 text-center transition-[border-color,background-color] duration-150 md:min-h-48',
-          dragging ? 'border-brand bg-brand/5' : 'border-input bg-card',
-          uploadDisabled && 'cursor-not-allowed opacity-70',
-        )}
-        aria-busy={uploading}
+      {/* A single calm upload surface keeps the primary task and its context together. */}
+      <section
+        aria-labelledby="upload-title"
+        className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.035),0_8px_28px_rgb(0_0_0/0.035)] dark:shadow-none"
       >
-        {uploading ? (
-          <Loader2 className="h-7 w-7 animate-spin text-brand-text" />
-        ) : (
-          <UploadCloud className="h-7 w-7 text-muted-foreground" />
-        )}
-        <p className="text-sm font-medium">{uploading ? t('uploading') : t('dropzone')}</p>
-        <p className="text-xs text-muted-foreground">{t('supportedTypes')}</p>
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          disabled={uploadDisabled || uploading}
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.length) void uploadFiles(e.target.files);
-            e.target.value = '';
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!uploadDisabled) setDragging(true);
           }}
-        />
-        <Button
-          variant="outline"
-          className="mt-1 border-brand/40 text-brand-text hover:bg-brand/5 hover:text-brand-text"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploadDisabled || uploading}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className={cn(
+            'group m-2 flex min-h-48 flex-col items-center justify-center rounded-[0.875rem] border border-dashed px-6 py-8 text-center outline-none transition-[border-color,background-color,box-shadow] duration-200 ease-out focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-card md:min-h-52',
+            dragging
+              ? 'border-brand bg-brand/5 shadow-[inset_0_0_0_1px_rgb(var(--brand)/0.18)]'
+              : 'border-border bg-secondary/25 hover:border-input hover:bg-secondary/35',
+            !locationsLoading && uploadLocation.kind !== 'ready' && 'cursor-not-allowed opacity-70',
+          )}
+          aria-busy={uploading}
         >
-          {t('chooseFile')}
-        </Button>
-      </div>
+          <div
+            className={cn(
+              'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border bg-card text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06)] transition-[color,transform,border-color] duration-200 ease-out',
+              dragging && 'scale-105 border-brand/30 text-brand-text',
+            )}
+          >
+            {uploading ? (
+              <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-brand-text" />
+            ) : (
+              <UploadCloud aria-hidden="true" className="h-5 w-5" />
+            )}
+          </div>
+          <h2 id="upload-title" className="text-base font-semibold tracking-[-0.01em]">
+            {t('addTitle')}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {uploading ? t('uploading') : t('dropzone')}
+          </p>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            disabled={uploadDisabled || uploading}
+            className="sr-only"
+            onChange={(e) => {
+              if (e.target.files?.length) void uploadFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+          <Button
+            variant="accent"
+            className="mt-4 min-w-36 shadow-[0_1px_2px_rgb(0_0_0/0.12)]"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploadDisabled || uploading}
+          >
+            {uploading && <Loader2 aria-hidden="true" className="animate-spin" />}
+            {t('chooseFile')}
+          </Button>
+          <p className="mt-3 text-xs text-muted-foreground">{t('supportedTypes')}</p>
+          {uploading && (
+            <span className="sr-only" role="status" aria-live="polite">
+              {t('uploading')}
+            </span>
+          )}
+        </div>
 
-      {!locationsLoading && locations.length === 1 && uploadLocation.kind === 'ready' && (
-        <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin aria-hidden="true" className="h-3.5 w-3.5" />
-          {t('locationAutomatic', { location: uploadLocation.location.name })}
-        </p>
-      )}
-
-      {!locationsLoading && uploadLocation.kind === 'missing' && (
-        <p
-          className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-          role="alert"
-        >
-          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-          {t('locationUnavailable')}
-        </p>
-      )}
+        <div className="border-t bg-card px-4 py-3 md:px-5">
+          {locationsLoading ? (
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          ) : locations.length > 1 ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <label htmlFor="document-location" className="text-sm font-medium">
+                {t('locationLabel')}
+              </label>
+              <SelectField
+                id="document-location"
+                value={selectedLocationId}
+                onChange={(event) => setSelectedLocationId(event.target.value)}
+                required
+                disabled={uploading}
+                className="sm:w-80"
+              >
+                <option value="">{t('locationPlaceholder')}</option>
+                {locations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.name}
+                    {location.address ? ` - ${location.address}` : ''}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+          ) : uploadLocation.kind === 'ready' ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin aria-hidden="true" className="h-4 w-4" />
+              {t('locationAutomatic', { location: uploadLocation.location.name })}
+            </p>
+          ) : (
+            <p className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle aria-hidden="true" className="h-4 w-4" />
+              {t('locationUnavailable')}
+            </p>
+          )}
+        </div>
+      </section>
 
       {error && (
         <p
@@ -292,125 +318,137 @@ export default function DocumentsPage() {
       )}
 
       {/* Recently uploaded list with live status. */}
-      <section className="mt-10">
-        <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-lg font-semibold">{t('recent')}</h2>
-          {!docsLoading && <Badge variant="muted">{docs.length}</Badge>}
+      <section className="mt-10" aria-labelledby="recent-title">
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 id="recent-title" className="text-lg font-semibold tracking-[-0.015em]">
+                {t('recent')}
+              </h2>
+              {!docsLoading && <Badge variant="muted">{docs.length}</Badge>}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">{t('recentHint')}</p>
+          </div>
         </div>
 
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row">
-          <div className="relative min-w-0 flex-1">
-            <Search
-              aria-hidden="true"
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('search')}
-              className="pl-9"
-            />
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
+          <div className="flex flex-col gap-2 border-b bg-secondary/20 p-3 sm:flex-row md:p-4">
+            <div className="relative min-w-0 flex-1">
+              <Search
+                aria-hidden="true"
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('search')}
+                aria-label={t('search')}
+                className="bg-card pl-9"
+              />
+            </div>
+            <SelectField
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'date' | 'kind')}
+              aria-label={t('sortLabel')}
+              className="bg-card sm:w-44"
+            >
+              <option value="date">{t('sortByDate')}</option>
+              <option value="kind">{t('sortByKind')}</option>
+            </SelectField>
           </div>
-          <SelectField
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'date' | 'kind')}
-            aria-label={t('sortLabel')}
-            className="sm:w-44"
-          >
-            <option value="date">{t('sortByDate')}</option>
-            <option value="kind">{t('sortByKind')}</option>
-          </SelectField>
-        </div>
 
-        {docsLoading ? (
-          <div className="overflow-hidden rounded-xl border bg-card" aria-label={t('loading')}>
-            {[0, 1, 2].map((item) => (
-              <ListRow key={item} className="gap-3">
-                <Skeleton className="h-9 w-9 shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-3 w-1/3 md:hidden" />
-                </div>
-                <Skeleton className="h-6 w-20" />
-              </ListRow>
-            ))}
-          </div>
-        ) : docs.length === 0 ? (
-          <div className="rounded-xl border bg-card px-6 py-12 text-center">
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-              <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-medium">{t('noDocuments')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('emptyHint')}</p>
-          </div>
-        ) : filteredAndSorted.length === 0 ? (
-          <div className="rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-            {t('noSearchResults')}
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border bg-card">
-            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] gap-4 border-b bg-muted/40 px-5 py-2.5 text-xs font-medium text-muted-foreground md:grid">
-              <span>{t('filename')}</span>
-              <span>{t('location')}</span>
-              <span>{t('status')}</span>
-              <span>{t('date')}</span>
-              <span className="text-right">{t('actions')}</span>
-            </div>
-            {filteredAndSorted.map((doc) => (
-              <ListRow
-                key={doc.id}
-                className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 md:grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] md:gap-4"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <FileText aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+          {docsLoading ? (
+            <div aria-label={t('loading')}>
+              {[0, 1, 2].map((item) => (
+                <ListRow key={item} className="gap-3">
+                  <Skeleton className="h-9 w-9 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-3 w-1/3 md:hidden" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{doc.original_filename}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground md:hidden">
-                      <span>{locationNames.get(doc.location_id ?? '') ?? '—'}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{dateFormatter.format(new Date(doc.created_at))}</span>
-                      <DocStatusBadge status={doc.status} />
+                  <Skeleton className="h-6 w-20" />
+                </ListRow>
+              ))}
+            </div>
+          ) : docs.length === 0 ? (
+            <div className="px-6 py-14 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium">{t('noDocuments')}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('emptyHint')}</p>
+            </div>
+          ) : filteredAndSorted.length === 0 ? (
+            <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+              {t('noSearchResults')}
+            </div>
+          ) : (
+            <div>
+              <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] gap-4 border-b bg-muted/40 px-5 py-2.5 text-xs font-medium text-muted-foreground md:grid">
+                <span>{t('filename')}</span>
+                <span>{t('location')}</span>
+                <span>{t('status')}</span>
+                <span>{t('date')}</span>
+                <span className="text-right">{t('actions')}</span>
+              </div>
+              {filteredAndSorted.map((doc) => (
+                <ListRow
+                  key={doc.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 transition-colors duration-150 hover:bg-secondary/30 md:grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] md:gap-4"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <FileText aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{doc.original_filename}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground md:hidden">
+                        <span>{locationNames.get(doc.location_id ?? '') ?? '—'}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{dateFormatter.format(new Date(doc.created_at))}</span>
+                        <DocStatusBadge status={doc.status} />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <span className="hidden truncate text-sm text-muted-foreground md:block">
-                  {locationNames.get(doc.location_id ?? '') ?? '—'}
-                </span>
-                <div className="hidden md:block">
-                  <DocStatusBadge status={doc.status} />
-                </div>
-                <span className="hidden text-sm text-muted-foreground md:block">
-                  {dateFormatter.format(new Date(doc.created_at))}
-                </span>
-                <div className="flex shrink-0 justify-end gap-1 self-start md:self-center">
-                  {isPdf(doc) && (
+                  <span className="hidden truncate text-sm text-muted-foreground md:block">
+                    {locationNames.get(doc.location_id ?? '') ?? '—'}
+                  </span>
+                  <div className="hidden md:block">
+                    <DocStatusBadge status={doc.status} />
+                  </div>
+                  <span className="hidden text-sm text-muted-foreground md:block">
+                    {dateFormatter.format(new Date(doc.created_at))}
+                  </span>
+                  <div className="flex shrink-0 justify-end gap-1 self-start md:self-center">
+                    {isPdf(doc) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t('preview')}
+                        aria-label={`${t('preview')}: ${doc.original_filename}`}
+                        onClick={() => void handlePreview(doc.storage_path)}
+                      >
+                        <Eye aria-hidden="true" className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      title={t('preview')}
-                      aria-label={`${t('preview')}: ${doc.original_filename}`}
-                      onClick={() => void handlePreview(doc.storage_path)}
+                      title={t('download')}
+                      aria-label={`${t('download')}: ${doc.original_filename}`}
+                      onClick={() =>
+                        void downloadFromStorage(doc.storage_path, doc.original_filename)
+                      }
                     >
-                      <Eye aria-hidden="true" className="h-4 w-4" />
+                      <Download aria-hidden="true" className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={t('download')}
-                    aria-label={`${t('download')}: ${doc.original_filename}`}
-                    onClick={() => void downloadFromStorage(doc.storage_path, doc.original_filename)}
-                  >
-                    <Download aria-hidden="true" className="h-4 w-4" />
-                  </Button>
-                </div>
-              </ListRow>
-            ))}
-          </div>
-        )}
+                  </div>
+                </ListRow>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
