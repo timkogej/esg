@@ -21,7 +21,6 @@ import type {
   FrameworkDatapoint,
   NewClientAttestation,
 } from '@/lib/supabase/types';
-import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -201,21 +200,26 @@ export default function DataPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1080px]">
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+    <div className="mx-auto max-w-[1040px]">
+      <header className="mb-6">
+        <h1 className="text-[1.625rem] font-semibold leading-tight tracking-[-0.025em] md:text-[1.75rem]">
+          {t('title')}
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">{t('subtitle')}</p>
+      </header>
 
       {loading ? (
         <div
-          className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none"
+          className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none"
           aria-label={t('loading')}
         >
-          <div className="border-b bg-secondary/20 px-5 py-4">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="mt-2 h-4 w-64 max-w-full" />
+          <div className="border-b border-border/70 bg-secondary/15 px-4 py-3">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="mt-2 h-3 w-56 max-w-full" />
           </div>
           {[0, 1, 2].map((i) => (
-            <ListRow key={i} className="gap-3">
-              <Skeleton className="h-10 w-10 shrink-0" />
+            <ListRow key={i} className="min-h-14 gap-3 px-4 py-2.5">
+              <Skeleton className="h-8 w-8 shrink-0" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-3 w-1/3" />
@@ -225,25 +229,25 @@ export default function DataPage() {
           ))}
         </div>
       ) : done ? (
-        <div className="rounded-2xl border bg-card px-6 py-14 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-success/20 bg-success/10 text-success">
-            <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
+        <div className="rounded-[0.875rem] bg-card px-6 py-12 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success">
+            <CheckCircle2 aria-hidden="true" className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold tracking-[-0.015em]">{t('attestSuccessTitle')}</h2>
-          <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">
+          <h2 className="text-base font-semibold tracking-[-0.015em]">{t('attestSuccessTitle')}</h2>
+          <p className="mx-auto mt-1 max-w-md text-[0.8125rem] leading-5 text-muted-foreground">
             {t('attestSuccess')}
           </p>
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border bg-card px-6 py-14 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025),0_8px_28px_rgb(0_0_0/0.025)] dark:shadow-none md:py-16">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border bg-secondary/50 text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
-            <ShieldCheck aria-hidden="true" className="h-6 w-6" />
+        <div className="rounded-[0.875rem] bg-card px-6 py-12 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04),0_6px_20px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+            <ShieldCheck aria-hidden="true" className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold tracking-[-0.015em]">{t('allClearTitle')}</h2>
-          <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">
+          <h2 className="text-base font-semibold tracking-[-0.015em]">{t('allClearTitle')}</h2>
+          <p className="mx-auto mt-1 max-w-md text-[0.8125rem] leading-5 text-muted-foreground">
             {t('noPending')}
           </p>
-          <Button asChild variant="secondary" className="mt-5">
+          <Button asChild variant="secondary" size="sm" className="mt-4">
             <Link href="/documents">
               {t('goToDocuments')}
               <ChevronRight aria-hidden="true" />
@@ -254,59 +258,61 @@ export default function DataPage() {
         <>
           {labelsMissing && (
             <div
-              className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive"
+              className="mb-5 flex items-start gap-2.5 rounded-xl bg-destructive/10 px-3.5 py-3 text-destructive ring-1 ring-destructive/15"
               role="alert"
             >
-              <AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
-              <p className="text-sm leading-6">{t('labelsMissingWarning')}</p>
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-[0.8125rem] leading-5">{t('labelsMissingWarning')}</p>
             </div>
           )}
 
-          <div className="mb-7 flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none sm:flex-row sm:items-center sm:justify-between md:p-6">
-            <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
-                <Database aria-hidden="true" className="h-5 w-5" />
+          <div className="mb-6 flex flex-col gap-3 rounded-[0.875rem] bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
+                <Database aria-hidden="true" className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="font-semibold tracking-[-0.01em]">{t('reviewTitle')}</h2>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">{t('reviewHint')}</p>
+                <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('reviewTitle')}</h2>
+                <p className="mt-0.5 text-[0.8125rem] leading-5 text-muted-foreground">
+                  {t('reviewHint')}
+                </p>
               </div>
             </div>
-            <Badge variant="warning" className="self-start sm:self-auto">
+            <Badge variant="warning" className="self-start px-2 text-[0.6875rem] sm:self-auto">
               {t('reviewCount', { count: items.length })}
             </Badge>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-7">
             {grouped.map(([moduleName, rows]) => (
               <section key={moduleName} aria-labelledby={`module-${moduleName}`}>
-                <div className="mb-3 flex items-center gap-2">
+                <div className="mb-2.5 flex items-center gap-2">
                   <h2
                     id={`module-${moduleName}`}
-                    className="text-sm font-semibold text-foreground"
+                    className="text-[0.8125rem] font-semibold text-foreground"
                   >
                     {moduleName}
                   </h2>
-                  <Badge variant="muted">{rows.length}</Badge>
+                  <Badge variant="muted" className="px-2 text-[0.6875rem]">{rows.length}</Badge>
                 </div>
-                <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
+                <div className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
                   {rows.map((item) => {
                     const edited = edits[item.id];
                     return (
                       <ListRow
                         key={item.id}
-                        className="block min-h-20 transition-colors duration-150 hover:bg-secondary/25 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(9rem,.35fr)_auto] sm:gap-x-5"
+                        className="group/row block min-h-16 px-4 py-3 transition-colors duration-150 ease-out hover:bg-secondary/25 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(8rem,.35fr)_auto] sm:gap-x-4"
                       >
                         <div className="min-w-0">
                           {item.label ? (
-                            <p className="font-medium leading-6">{item.label}</p>
+                            <p className="text-[0.8125rem] font-medium leading-5">{item.label}</p>
                           ) : (
-                            <p className="font-medium leading-6 text-destructive">
+                            <p className="text-[0.8125rem] font-medium leading-5 text-destructive">
                               {t('unknownDatapoint')}
                             </p>
                           )}
-                          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                            <FileText aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+                            <FileText aria-hidden="true" className="h-3 w-3 shrink-0" />
                             {item.sourceFilename && item.sourceStoragePath ? (
                               <button
                                 type="button"
@@ -329,17 +335,17 @@ export default function DataPage() {
                         </div>
 
                         <div className="mt-3 sm:mt-0 sm:text-right">
-                          <p className="text-xs text-muted-foreground sm:sr-only">{t('value')}</p>
-                          <p className="mt-0.5 text-[1.0625rem] font-semibold tabular-nums tracking-[-0.01em] sm:mt-0">
+                          <p className="text-[0.6875rem] text-muted-foreground sm:sr-only">{t('value')}</p>
+                          <p className="mt-0.5 text-base font-semibold tabular-nums tracking-[-0.01em] sm:mt-0">
                             {edited !== undefined ? edited : formatDatapointValue(item)}{' '}
                             {item.unit && (
-                              <span className="text-sm font-normal text-muted-foreground">
+                              <span className="text-[0.8125rem] font-normal text-muted-foreground">
                                 {item.unit}
                               </span>
                             )}
                           </p>
                           {edited !== undefined && (
-                            <span className="mt-1 inline-flex items-center gap-1 text-xs text-brand-text">
+                            <span className="mt-0.5 inline-flex items-center gap-1 text-[0.6875rem] text-brand-text">
                               <Check aria-hidden="true" className="h-3 w-3" />
                               {t('corrected')}
                             </span>
@@ -349,7 +355,7 @@ export default function DataPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="mt-3 justify-start text-muted-foreground hover:text-foreground sm:mt-0 sm:justify-center"
+                          className="mt-2 h-8 justify-start px-2 text-xs text-muted-foreground transition-opacity duration-150 hover:text-foreground sm:mt-0 sm:justify-center sm:opacity-0 sm:group-hover/row:opacity-100 sm:group-focus-within/row:opacity-100"
                           aria-expanded={editingId === item.id}
                           onClick={() => setEditingId(editingId === item.id ? null : item.id)}
                         >
@@ -358,8 +364,8 @@ export default function DataPage() {
                         </Button>
 
                         {editingId === item.id && (
-                          <div className="mt-4 border-t pt-4 sm:col-span-3">
-                            <label htmlFor={`edit-${item.id}`} className="mb-1.5 block text-sm font-medium">
+                          <div className="mt-3 animate-in border-t border-border/70 pt-3 duration-150 fade-in slide-in-from-top-1 sm:col-span-3">
+                            <label htmlFor={`edit-${item.id}`} className="mb-1.5 block text-[0.8125rem] font-medium">
                               {t('editedValue')}
                             </label>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -372,11 +378,12 @@ export default function DataPage() {
                                 onChange={(e) =>
                                   setEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
                                 }
-                                className="max-w-sm"
+                                className="h-9 max-w-sm text-[0.8125rem]"
                                 placeholder={t('editedValue')}
                               />
                               <Button
                                 variant="secondary"
+                                size="sm"
                                 onClick={() => setEditingId(null)}
                               >
                                 <Check aria-hidden="true" />
@@ -393,16 +400,17 @@ export default function DataPage() {
             ))}
           </div>
 
-          <div className="glass-bar sticky bottom-20 z-20 mt-8 rounded-2xl border px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.10)] md:bottom-4 md:px-5">
+          <div className="glass-bar sticky bottom-20 z-20 mt-7 rounded-[0.875rem] px-4 py-3 shadow-[0_8px_28px_rgb(0_0_0/0.09)] ring-1 ring-border/70 md:bottom-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-start gap-2.5">
-                <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
-                <p className="text-xs leading-5 text-muted-foreground">{t('attestStatement')}</p>
+                <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <p className="text-[0.6875rem] leading-4 text-muted-foreground">
+                  {t('attestStatement')}
+                </p>
               </div>
               <Button
                 variant="accent"
-                size="lg"
-                className="shrink-0 shadow-[0_1px_2px_rgb(0_0_0/0.12)]"
+                className="w-full shrink-0 shadow-[0_1px_2px_rgb(0_0_0/0.10)] sm:w-auto"
                 onClick={() => void attestAll()}
                 disabled={submitting}
               >
