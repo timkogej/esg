@@ -18,7 +18,6 @@ import { DOCUMENTS_BUCKET, downloadFromStorage, sha256Hex } from '@/lib/storage'
 import { DOC_STATUS_POLL_MS } from '@/lib/config';
 import type { DbLocation, DocumentRow } from '@/lib/supabase/types';
 import { resolveDocumentUploadLocation } from '@/lib/document-upload-location';
-import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { DocStatusBadge } from '@/components/documents/doc-status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -195,13 +194,18 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1080px]">
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+    <div className="mx-auto max-w-[1040px]">
+      <header className="mb-6">
+        <h1 className="text-[1.625rem] font-semibold leading-tight tracking-[-0.025em] md:text-[1.75rem]">
+          {t('title')}
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">{t('subtitle')}</p>
+      </header>
 
       {/* A single calm upload surface keeps the primary task and its context together. */}
       <section
         aria-labelledby="upload-title"
-        className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.035),0_8px_28px_rgb(0_0_0/0.035)] dark:shadow-none"
+        className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.04),0_6px_20px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none"
       >
         <div
           onDragOver={(e) => {
@@ -211,30 +215,30 @@ export default function DocumentsPage() {
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           className={cn(
-            'group m-2 flex min-h-48 flex-col items-center justify-center rounded-[0.875rem] border border-dashed px-6 py-8 text-center outline-none transition-[border-color,background-color,box-shadow] duration-200 ease-out focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-card md:min-h-52',
+            'group m-1.5 flex min-h-40 flex-col items-center justify-center rounded-[0.625rem] px-6 py-6 text-center outline-none transition-[background-color,box-shadow] duration-200 ease-out focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 focus-within:ring-offset-card md:min-h-44',
             dragging
-              ? 'border-brand bg-brand/5 shadow-[inset_0_0_0_1px_rgb(var(--brand)/0.18)]'
-              : 'border-border bg-secondary/25 hover:border-input hover:bg-secondary/35',
+              ? 'bg-brand/5 shadow-[inset_0_0_0_1px_rgb(var(--brand)/0.35)]'
+              : 'bg-secondary/25 hover:bg-secondary/35',
             !locationsLoading && uploadLocation.kind !== 'ready' && 'cursor-not-allowed opacity-70',
           )}
           aria-busy={uploading}
         >
           <div
             className={cn(
-              'mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border bg-card text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.06)] transition-[color,transform,border-color] duration-200 ease-out',
-              dragging && 'scale-105 border-brand/30 text-brand-text',
+              'mb-2.5 flex h-10 w-10 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-[0_1px_3px_rgb(0_0_0/0.07)] transition-[color,transform] duration-200 ease-out',
+              dragging && 'scale-[1.04] text-brand-text',
             )}
           >
             {uploading ? (
-              <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-brand-text" />
+              <Loader2 aria-hidden="true" className="h-[18px] w-[18px] animate-spin text-brand-text" />
             ) : (
-              <UploadCloud aria-hidden="true" className="h-5 w-5" />
+              <UploadCloud aria-hidden="true" className="h-[18px] w-[18px]" />
             )}
           </div>
-          <h2 id="upload-title" className="text-base font-semibold tracking-[-0.01em]">
+          <h2 id="upload-title" className="text-sm font-semibold tracking-[-0.01em]">
             {t('addTitle')}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
             {uploading ? t('uploading') : t('dropzone')}
           </p>
           <input
@@ -250,14 +254,15 @@ export default function DocumentsPage() {
           />
           <Button
             variant="accent"
-            className="mt-4 min-w-36 shadow-[0_1px_2px_rgb(0_0_0/0.12)]"
+            size="sm"
+            className="mt-3 min-w-32 shadow-[0_1px_2px_rgb(0_0_0/0.10)]"
             onClick={() => inputRef.current?.click()}
             disabled={uploadDisabled || uploading}
           >
             {uploading && <Loader2 aria-hidden="true" className="animate-spin" />}
             {t('chooseFile')}
           </Button>
-          <p className="mt-3 text-xs text-muted-foreground">{t('supportedTypes')}</p>
+          <p className="mt-2.5 text-[0.6875rem] text-muted-foreground">{t('supportedTypes')}</p>
           {uploading && (
             <span className="sr-only" role="status" aria-live="polite">
               {t('uploading')}
@@ -265,7 +270,7 @@ export default function DocumentsPage() {
           )}
         </div>
 
-        <div className="border-t bg-card px-4 py-3 md:px-5">
+        <div className="border-t border-border/70 bg-card px-4 py-2.5">
           {locationsLoading ? (
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-4 rounded-full" />
@@ -273,7 +278,7 @@ export default function DocumentsPage() {
             </div>
           ) : locations.length > 1 ? (
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <label htmlFor="document-location" className="text-sm font-medium">
+              <label htmlFor="document-location" className="text-[0.8125rem] font-medium">
                 {t('locationLabel')}
               </label>
               <SelectField
@@ -282,7 +287,7 @@ export default function DocumentsPage() {
                 onChange={(event) => setSelectedLocationId(event.target.value)}
                 required
                 disabled={uploading}
-                className="sm:w-80"
+                className="h-9 text-[0.8125rem] sm:w-80"
               >
                 <option value="">{t('locationPlaceholder')}</option>
                 {locations.map((location) => (
@@ -294,13 +299,13 @@ export default function DocumentsPage() {
               </SelectField>
             </div>
           ) : uploadLocation.kind === 'ready' ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin aria-hidden="true" className="h-4 w-4" />
+            <p className="flex items-center gap-2 text-[0.8125rem] text-muted-foreground">
+              <MapPin aria-hidden="true" className="h-3.5 w-3.5" />
               {t('locationAutomatic', { location: uploadLocation.location.name })}
             </p>
           ) : (
-            <p className="flex items-center gap-2 text-sm text-destructive">
-              <AlertCircle aria-hidden="true" className="h-4 w-4" />
+            <p className="flex items-center gap-2 text-[0.8125rem] text-destructive">
+              <AlertCircle aria-hidden="true" className="h-3.5 w-3.5" />
               {t('locationUnavailable')}
             </p>
           )}
@@ -318,25 +323,25 @@ export default function DocumentsPage() {
       )}
 
       {/* Recently uploaded list with live status. */}
-      <section className="mt-10" aria-labelledby="recent-title">
-        <div className="mb-4 flex items-end justify-between gap-4">
+      <section className="mt-8" aria-labelledby="recent-title">
+        <div className="mb-3.5 flex items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 id="recent-title" className="text-lg font-semibold tracking-[-0.015em]">
+              <h2 id="recent-title" className="text-base font-semibold tracking-[-0.015em]">
                 {t('recent')}
               </h2>
-              {!docsLoading && <Badge variant="muted">{docs.length}</Badge>}
+              {!docsLoading && <Badge variant="muted" className="px-2 text-[0.6875rem]">{docs.length}</Badge>}
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">{t('recentHint')}</p>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('recentHint')}</p>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
-          <div className="flex flex-col gap-2 border-b bg-secondary/20 p-3 sm:flex-row md:p-4">
+        <div className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
+          <div className="flex flex-col gap-2 border-b border-border/70 bg-secondary/15 p-3 sm:flex-row">
             <div className="relative min-w-0 flex-1">
               <Search
                 aria-hidden="true"
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
               />
               <Input
                 type="search"
@@ -344,14 +349,14 @@ export default function DocumentsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('search')}
                 aria-label={t('search')}
-                className="bg-card pl-9"
+                className="h-9 bg-card pl-8 text-[0.8125rem]"
               />
             </div>
             <SelectField
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'kind')}
               aria-label={t('sortLabel')}
-              className="bg-card sm:w-44"
+              className="h-9 bg-card text-[0.8125rem] sm:w-40"
             >
               <option value="date">{t('sortByDate')}</option>
               <option value="kind">{t('sortByKind')}</option>
@@ -385,7 +390,7 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <div>
-              <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] gap-4 border-b bg-muted/40 px-5 py-2.5 text-xs font-medium text-muted-foreground md:grid">
+              <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8rem_7.5rem_5rem] gap-4 border-b border-border/70 bg-secondary/20 px-4 py-2 text-[0.6875rem] font-medium text-muted-foreground md:grid">
                 <span>{t('filename')}</span>
                 <span>{t('location')}</span>
                 <span>{t('status')}</span>
@@ -395,14 +400,14 @@ export default function DocumentsPage() {
               {filteredAndSorted.map((doc) => (
                 <ListRow
                   key={doc.id}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 transition-colors duration-150 hover:bg-secondary/30 md:grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] md:gap-4"
+                  className="group/row grid min-h-14 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-2.5 transition-colors duration-150 ease-out hover:bg-secondary/25 md:grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8rem_7.5rem_5rem] md:gap-4"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <FileText aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition-colors duration-150 group-hover/row:text-foreground">
+                      <FileText aria-hidden="true" className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{doc.original_filename}</p>
+                      <p className="truncate text-[0.8125rem] font-medium">{doc.original_filename}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground md:hidden">
                         <span>{locationNames.get(doc.location_id ?? '') ?? '—'}</span>
                         <span aria-hidden="true">·</span>
@@ -411,20 +416,21 @@ export default function DocumentsPage() {
                       </div>
                     </div>
                   </div>
-                  <span className="hidden truncate text-sm text-muted-foreground md:block">
+                  <span className="hidden truncate text-[0.8125rem] text-muted-foreground md:block">
                     {locationNames.get(doc.location_id ?? '') ?? '—'}
                   </span>
                   <div className="hidden md:block">
                     <DocStatusBadge status={doc.status} />
                   </div>
-                  <span className="hidden text-sm text-muted-foreground md:block">
+                  <span className="hidden text-[0.8125rem] text-muted-foreground md:block">
                     {dateFormatter.format(new Date(doc.created_at))}
                   </span>
-                  <div className="flex shrink-0 justify-end gap-1 self-start md:self-center">
+                  <div className="flex shrink-0 justify-end gap-0.5 self-start transition-opacity duration-150 ease-out md:self-center md:opacity-0 md:group-hover/row:opacity-100 md:group-focus-within/row:opacity-100">
                     {isPdf(doc) && (
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8"
                         title={t('preview')}
                         aria-label={`${t('preview')}: ${doc.original_filename}`}
                         onClick={() => void handlePreview(doc.storage_path)}
@@ -435,6 +441,7 @@ export default function DocumentsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       title={t('download')}
                       aria-label={`${t('download')}: ${doc.original_filename}`}
                       onClick={() =>

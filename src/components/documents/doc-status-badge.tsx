@@ -20,7 +20,7 @@ export function DocStatusBadge({ status }: { status: DocumentStatus }) {
   const variant = status === 'failed' ? 'destructive' : status === 'extracted' ? 'success' : 'muted';
 
   return (
-    <Badge variant={variant} className="gap-1.5 whitespace-nowrap">
+    <Badge variant={variant} className="min-h-5 gap-1 whitespace-nowrap px-2 text-[0.6875rem]">
       <Icon aria-hidden="true" className={isProcessing ? 'h-3 w-3 animate-spin' : 'h-3 w-3'} />
       {t(status)}
     </Badge>
