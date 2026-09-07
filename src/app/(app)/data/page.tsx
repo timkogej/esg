@@ -2,7 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, Pencil, FileText, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Database,
+  FileText,
+  Loader2,
+  Pencil,
+  ShieldCheck,
+} from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import type {
@@ -11,9 +22,10 @@ import type {
   NewClientAttestation,
 } from '@/lib/supabase/types';
 import { PageHeader } from '@/components/page-header';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { ListRow } from '@/components/ui/list-row';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDatapointValue } from '@/lib/datapoint';
 import { downloadFromStorage } from '@/lib/storage';
@@ -189,124 +201,191 @@ export default function DataPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-[1080px]">
       <PageHeader title={t('title')} subtitle={t('subtitle')} />
 
       {loading ? (
-        <div className="space-y-3">
+        <div
+          className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none"
+          aria-label={t('loading')}
+        >
+          <div className="border-b bg-secondary/20 px-5 py-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="mt-2 h-4 w-64 max-w-full" />
+          </div>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <ListRow key={i} className="gap-3">
+              <Skeleton className="h-10 w-10 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/3" />
+              </div>
+              <Skeleton className="h-7 w-24" />
+            </ListRow>
           ))}
         </div>
       ) : done ? (
-        <Card>
-          <CardContent className="flex items-center gap-3 py-8">
-            <CheckCircle2 className="h-6 w-6 text-success" />
-            <p className="text-sm">{t('attestSuccess')}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl border bg-card px-6 py-14 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-success/20 bg-success/10 text-success">
+            <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
+          </div>
+          <h2 className="text-lg font-semibold tracking-[-0.015em]">{t('attestSuccessTitle')}</h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">
+            {t('attestSuccess')}
+          </p>
+        </div>
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-sm text-muted-foreground">{t('noPending')}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl border bg-card px-6 py-14 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025),0_8px_28px_rgb(0_0_0/0.025)] dark:shadow-none md:py-16">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border bg-secondary/50 text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+            <ShieldCheck aria-hidden="true" className="h-6 w-6" />
+          </div>
+          <h2 className="text-lg font-semibold tracking-[-0.015em]">{t('allClearTitle')}</h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">
+            {t('noPending')}
+          </p>
+          <Button asChild variant="secondary" className="mt-5">
+            <Link href="/documents">
+              {t('goToDocuments')}
+              <ChevronRight aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
       ) : (
         <>
           {labelsMissing && (
-            <Card className="mb-6 border-destructive/50">
-              <CardContent className="flex items-start gap-3 py-4">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-                <p className="text-sm text-destructive">{t('labelsMissingWarning')}</p>
-              </CardContent>
-            </Card>
+            <div
+              className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive"
+              role="alert"
+            >
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+              <p className="text-sm leading-6">{t('labelsMissingWarning')}</p>
+            </div>
           )}
+
+          <div className="mb-7 flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none sm:flex-row sm:items-center sm:justify-between md:p-6">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
+                <Database aria-hidden="true" className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-semibold tracking-[-0.01em]">{t('reviewTitle')}</h2>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">{t('reviewHint')}</p>
+              </div>
+            </div>
+            <Badge variant="warning" className="self-start sm:self-auto">
+              {t('reviewCount', { count: items.length })}
+            </Badge>
+          </div>
+
           <div className="space-y-8">
             {grouped.map(([moduleName, rows]) => (
-              <section key={moduleName}>
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {moduleName}
-                </h2>
-                <div className="space-y-2">
+              <section key={moduleName} aria-labelledby={`module-${moduleName}`}>
+                <div className="mb-3 flex items-center gap-2">
+                  <h2
+                    id={`module-${moduleName}`}
+                    className="text-sm font-semibold text-foreground"
+                  >
+                    {moduleName}
+                  </h2>
+                  <Badge variant="muted">{rows.length}</Badge>
+                </div>
+                <div className="overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] dark:shadow-none">
                   {rows.map((item) => {
                     const edited = edits[item.id];
                     return (
-                      <Card key={item.id}>
-                        <CardContent className="py-4">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                              {item.label ? (
-                                <p className="font-medium">{item.label}</p>
-                              ) : (
-                                <p className="font-medium text-destructive">
-                                  {t('unknownDatapoint')}
-                                </p>
-                              )}
-                              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                                <span>
-                                  {t('value')}:{' '}
-                                  <span className="font-medium text-foreground">
-                                    {edited !== undefined
-                                      ? edited
-                                      : formatDatapointValue(item)}{' '}
-                                    {item.unit ?? ''}
-                                  </span>
-                                </span>
-                                <span className="inline-flex items-center gap-1">
-                                  <FileText className="h-3.5 w-3.5" />
-                                  {item.sourceFilename && item.sourceStoragePath ? (
-                                    <button
-                                      type="button"
-                                      className="underline underline-offset-2 hover:text-foreground"
-                                      onClick={() =>
-                                        void downloadFromStorage(
-                                          item.sourceStoragePath!,
-                                          item.sourceFilename!,
-                                        )
-                                      }
-                                    >
-                                      {item.sourceFilename}
-                                    </button>
-                                  ) : item.provenance === 'client_entered' ? (
-                                    t('selfEntered')
-                                  ) : (
-                                    t('noSource')
-                                  )}
-                                </span>
-                              </div>
-
-                              {editingId === item.id && (
-                                <div className="mt-3 flex items-center gap-2">
-                                  <Input
-                                    autoFocus
-                                    defaultValue={
-                                      edited !== undefined ? edited : formatDatapointValue(item)
-                                    }
-                                    onChange={(e) =>
-                                      setEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
-                                    }
-                                    className="max-w-xs"
-                                    placeholder={t('editedValue')}
-                                  />
-                                  <Button size="sm" variant="secondary" onClick={() => setEditingId(null)}>
-                                    OK
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="shrink-0"
-                              onClick={() => setEditingId(editingId === item.id ? null : item.id)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                              {t('edit')}
-                            </Button>
+                      <ListRow
+                        key={item.id}
+                        className="block min-h-20 transition-colors duration-150 hover:bg-secondary/25 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(9rem,.35fr)_auto] sm:gap-x-5"
+                      >
+                        <div className="min-w-0">
+                          {item.label ? (
+                            <p className="font-medium leading-6">{item.label}</p>
+                          ) : (
+                            <p className="font-medium leading-6 text-destructive">
+                              {t('unknownDatapoint')}
+                            </p>
+                          )}
+                          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                            <FileText aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                            {item.sourceFilename && item.sourceStoragePath ? (
+                              <button
+                                type="button"
+                                className="truncate underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                onClick={() =>
+                                  void downloadFromStorage(
+                                    item.sourceStoragePath!,
+                                    item.sourceFilename!,
+                                  )
+                                }
+                              >
+                                {item.sourceFilename}
+                              </button>
+                            ) : item.provenance === 'client_entered' ? (
+                              t('selfEntered')
+                            ) : (
+                              t('noSource')
+                            )}
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+
+                        <div className="mt-3 sm:mt-0 sm:text-right">
+                          <p className="text-xs text-muted-foreground sm:sr-only">{t('value')}</p>
+                          <p className="mt-0.5 text-[1.0625rem] font-semibold tabular-nums tracking-[-0.01em] sm:mt-0">
+                            {edited !== undefined ? edited : formatDatapointValue(item)}{' '}
+                            {item.unit && (
+                              <span className="text-sm font-normal text-muted-foreground">
+                                {item.unit}
+                              </span>
+                            )}
+                          </p>
+                          {edited !== undefined && (
+                            <span className="mt-1 inline-flex items-center gap-1 text-xs text-brand-text">
+                              <Check aria-hidden="true" className="h-3 w-3" />
+                              {t('corrected')}
+                            </span>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-3 justify-start text-muted-foreground hover:text-foreground sm:mt-0 sm:justify-center"
+                          aria-expanded={editingId === item.id}
+                          onClick={() => setEditingId(editingId === item.id ? null : item.id)}
+                        >
+                          <Pencil aria-hidden="true" className="h-4 w-4" />
+                          {t('edit')}
+                        </Button>
+
+                        {editingId === item.id && (
+                          <div className="mt-4 border-t pt-4 sm:col-span-3">
+                            <label htmlFor={`edit-${item.id}`} className="mb-1.5 block text-sm font-medium">
+                              {t('editedValue')}
+                            </label>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                              <Input
+                                id={`edit-${item.id}`}
+                                autoFocus
+                                defaultValue={
+                                  edited !== undefined ? edited : formatDatapointValue(item)
+                                }
+                                onChange={(e) =>
+                                  setEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
+                                }
+                                className="max-w-sm"
+                                placeholder={t('editedValue')}
+                              />
+                              <Button
+                                variant="secondary"
+                                onClick={() => setEditingId(null)}
+                              >
+                                <Check aria-hidden="true" />
+                                {t('doneEditing')}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </ListRow>
                     );
                   })}
                 </div>
@@ -314,16 +393,23 @@ export default function DataPage() {
             ))}
           </div>
 
-          <div className="sticky bottom-20 mt-8 md:bottom-4">
-            <Button
-              variant="accent"
-              size="lg"
-              className="w-full shadow-lg"
-              onClick={() => void attestAll()}
-              disabled={submitting}
-            >
-              {submitting ? t('attesting') : t('attestAll')}
-            </Button>
+          <div className="glass-bar sticky bottom-20 z-20 mt-8 rounded-2xl border px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.10)] md:bottom-4 md:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-2.5">
+                <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+                <p className="text-xs leading-5 text-muted-foreground">{t('attestStatement')}</p>
+              </div>
+              <Button
+                variant="accent"
+                size="lg"
+                className="shrink-0 shadow-[0_1px_2px_rgb(0_0_0/0.12)]"
+                onClick={() => void attestAll()}
+                disabled={submitting}
+              >
+                {submitting && <Loader2 aria-hidden="true" className="animate-spin" />}
+                {submitting ? t('attesting') : t('attestAll')}
+              </Button>
+            </div>
           </div>
         </>
       )}
