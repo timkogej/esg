@@ -1,8 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { UploadCloud, Loader2, FileText, Download, Eye } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import {
+  AlertCircle,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  MapPin,
+  Search,
+  UploadCloud,
+} from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { DOCUMENTS_BUCKET, downloadFromStorage, sha256Hex } from '@/lib/storage';
@@ -10,9 +19,13 @@ import { DOC_STATUS_POLL_MS } from '@/lib/config';
 import type { DbLocation, DocumentRow } from '@/lib/supabase/types';
 import { resolveDocumentUploadLocation } from '@/lib/document-upload-location';
 import { PageHeader } from '@/components/page-header';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DocStatusBadge } from '@/components/documents/doc-status-badge';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { ListRow } from '@/components/ui/list-row';
+import { SelectField } from '@/components/ui/select-field';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 function isPdf(doc: DocumentRow): boolean {
@@ -21,10 +34,12 @@ function isPdf(doc: DocumentRow): boolean {
 
 export default function DocumentsPage() {
   const t = useTranslations('documents');
+  const locale = useLocale();
   const supabase = getSupabaseBrowserClient();
   const { clientId } = useAuth();
 
   const [docs, setDocs] = useState<DocumentRow[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
   const [locations, setLocations] = useState<DbLocation[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [selectedLocationId, setSelectedLocationId] = useState('');
@@ -35,17 +50,22 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const loadDocs = useCallback(async () => {
-    if (!clientId) return;
-    const { data } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('client_id', clientId)
-      .order('created_at', { ascending: false })
-      .limit(25)
-      .returns<DocumentRow[]>();
-    setDocs(data ?? []);
-  }, [supabase, clientId]);
+  const loadDocs = useCallback(
+    async (showLoading = false) => {
+      if (!clientId) return;
+      if (showLoading) setDocsLoading(true);
+      const { data } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+        .limit(25)
+        .returns<DocumentRow[]>();
+      setDocs(data ?? []);
+      if (showLoading) setDocsLoading(false);
+    },
+    [supabase, clientId],
+  );
 
   const loadLocations = useCallback(async () => {
     if (!clientId) return;
@@ -91,6 +111,16 @@ export default function DocumentsPage() {
     });
   }, [docs, sortBy, searchQuery]);
 
+  const locationNames = useMemo(
+    () => new Map(locations.map((location) => [location.id, location.name])),
+    [locations],
+  );
+
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }),
+    [locale],
+  );
+
   async function handlePreview(storagePath: string) {
     const { data } = await supabase.storage
       .from(DOCUMENTS_BUCKET)
@@ -101,7 +131,7 @@ export default function DocumentsPage() {
   // Initial load + poll every ~10s so statuses update as the backend processes
   // uploads (no realtime websocket needed in this phase).
   useEffect(() => {
-    void loadDocs();
+    void loadDocs(true);
     void loadLocations();
     const id = setInterval(() => void loadDocs(), DOC_STATUS_POLL_MS);
     return () => clearInterval(id);
@@ -169,6 +199,29 @@ export default function DocumentsPage() {
       <PageHeader title={t('title')} subtitle={t('subtitle')} />
 
       {/* Drag-and-drop zone + explicit file picker, both available at once. */}
+      {!locationsLoading && locations.length > 1 && (
+        <div className="mb-4 max-w-md">
+          <label htmlFor="document-location" className="mb-1.5 block text-sm font-medium">
+            {t('locationLabel')}
+          </label>
+          <SelectField
+            id="document-location"
+            value={selectedLocationId}
+            onChange={(event) => setSelectedLocationId(event.target.value)}
+            required
+            disabled={uploading}
+          >
+            <option value="">{t('locationPlaceholder')}</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+                {location.address ? ` - ${location.address}` : ''}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      )}
+
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -177,18 +230,19 @@ export default function DocumentsPage() {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={cn(
-          'flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-10 text-center transition-colors',
-          dragging ? 'border-accent bg-accent/10' : 'border-border bg-card/50',
+          'flex min-h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-6 py-7 text-center transition-[border-color,background-color] duration-150 md:min-h-48',
+          dragging ? 'border-brand bg-brand/5' : 'border-input bg-card',
           uploadDisabled && 'cursor-not-allowed opacity-70',
         )}
+        aria-busy={uploading}
       >
         {uploading ? (
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-7 w-7 animate-spin text-brand-text" />
         ) : (
-          <UploadCloud className="h-8 w-8 text-muted-foreground" />
+          <UploadCloud className="h-7 w-7 text-muted-foreground" />
         )}
         <p className="text-sm font-medium">{uploading ? t('uploading') : t('dropzone')}</p>
-        <p className="text-xs text-muted-foreground">{t('or')}</p>
+        <p className="text-xs text-muted-foreground">{t('supportedTypes')}</p>
         <input
           ref={inputRef}
           type="file"
@@ -201,7 +255,8 @@ export default function DocumentsPage() {
           }}
         />
         <Button
-          variant="accent"
+          variant="outline"
+          className="mt-1 border-brand/40 text-brand-text hover:bg-brand/5 hover:text-brand-text"
           onClick={() => inputRef.current?.click()}
           disabled={uploadDisabled || uploading}
         >
@@ -210,103 +265,149 @@ export default function DocumentsPage() {
       </div>
 
       {!locationsLoading && locations.length === 1 && uploadLocation.kind === 'ready' && (
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <MapPin aria-hidden="true" className="h-3.5 w-3.5" />
           {t('locationAutomatic', { location: uploadLocation.location.name })}
         </p>
       )}
 
-      {!locationsLoading && locations.length > 1 && (
-        <div className="mt-4 max-w-md">
-          <label htmlFor="document-location" className="mb-1.5 block text-sm font-medium">
-            {t('locationLabel')}
-          </label>
-          <select
-            id="document-location"
-            value={selectedLocationId}
-            onChange={(event) => setSelectedLocationId(event.target.value)}
-            required
-            disabled={uploading}
-            className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
-          >
-            <option value="">{t('locationPlaceholder')}</option>
-            {locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
-                {location.address ? ` - ${location.address}` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {!locationsLoading && uploadLocation.kind === 'missing' && (
-        <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p
+          className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+          role="alert"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           {t('locationUnavailable')}
         </p>
       )}
 
       {error && (
-        <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p
+          className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+          role="alert"
+        >
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </p>
       )}
 
       {/* Recently uploaded list with live status. */}
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold">{t('recent')}</h2>
+      <section className="mt-10">
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold">{t('recent')}</h2>
+          {!docsLoading && <Badge variant="muted">{docs.length}</Badge>}
+        </div>
 
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('search')}
-            className="h-9 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm"
-          />
-          <select
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+          <div className="relative min-w-0 flex-1">
+            <Search
+              aria-hidden="true"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('search')}
+              className="pl-9"
+            />
+          </div>
+          <SelectField
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'date' | 'kind')}
-            className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+            aria-label={t('sortLabel')}
+            className="sm:w-44"
           >
             <option value="date">{t('sortByDate')}</option>
             <option value="kind">{t('sortByKind')}</option>
-          </select>
+          </SelectField>
         </div>
 
-        {docs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('noDocuments')}</p>
+        {docsLoading ? (
+          <div className="overflow-hidden rounded-xl border bg-card" aria-label={t('loading')}>
+            {[0, 1, 2].map((item) => (
+              <ListRow key={item} className="gap-3">
+                <Skeleton className="h-9 w-9 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-3 w-1/3 md:hidden" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </ListRow>
+            ))}
+          </div>
+        ) : docs.length === 0 ? (
+          <div className="rounded-xl border bg-card px-6 py-12 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+              <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">{t('noDocuments')}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('emptyHint')}</p>
+          </div>
+        ) : filteredAndSorted.length === 0 ? (
+          <div className="rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+            {t('noSearchResults')}
+          </div>
         ) : (
-          <div className="space-y-2">
+          <div className="overflow-hidden rounded-xl border bg-card">
+            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] gap-4 border-b bg-muted/40 px-5 py-2.5 text-xs font-medium text-muted-foreground md:grid">
+              <span>{t('filename')}</span>
+              <span>{t('location')}</span>
+              <span>{t('status')}</span>
+              <span>{t('date')}</span>
+              <span className="text-right">{t('actions')}</span>
+            </div>
             {filteredAndSorted.map((doc) => (
-              <Card key={doc.id}>
-                <CardContent className="flex items-center justify-between gap-3 py-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span className="truncate text-sm font-medium">{doc.original_filename}</span>
+              <ListRow
+                key={doc.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 md:grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8.5rem_8rem_5.5rem] md:gap-4"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <FileText aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <DocStatusBadge status={doc.status} />
-                    {isPdf(doc) && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t('preview')}
-                        onClick={() => void handlePreview(doc.storage_path)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{doc.original_filename}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground md:hidden">
+                      <span>{locationNames.get(doc.location_id ?? '') ?? '—'}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{dateFormatter.format(new Date(doc.created_at))}</span>
+                      <DocStatusBadge status={doc.status} />
+                    </div>
+                  </div>
+                </div>
+                <span className="hidden truncate text-sm text-muted-foreground md:block">
+                  {locationNames.get(doc.location_id ?? '') ?? '—'}
+                </span>
+                <div className="hidden md:block">
+                  <DocStatusBadge status={doc.status} />
+                </div>
+                <span className="hidden text-sm text-muted-foreground md:block">
+                  {dateFormatter.format(new Date(doc.created_at))}
+                </span>
+                <div className="flex shrink-0 justify-end gap-1 self-start md:self-center">
+                  {isPdf(doc) && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      title={t('download')}
-                      onClick={() => void downloadFromStorage(doc.storage_path, doc.original_filename)}
+                      title={t('preview')}
+                      aria-label={`${t('preview')}: ${doc.original_filename}`}
+                      onClick={() => void handlePreview(doc.storage_path)}
                     >
-                      <Download className="h-4 w-4" />
+                      <Eye aria-hidden="true" className="h-4 w-4" />
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t('download')}
+                    aria-label={`${t('download')}: ${doc.original_filename}`}
+                    onClick={() => void downloadFromStorage(doc.storage_path, doc.original_filename)}
+                  >
+                    <Download aria-hidden="true" className="h-4 w-4" />
+                  </Button>
+                </div>
+              </ListRow>
             ))}
           </div>
         )}
