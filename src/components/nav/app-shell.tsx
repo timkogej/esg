@@ -1,0 +1,20 @@
+'use client';
+
+import { Sidebar } from '@/components/nav/sidebar';
+import { BottomBar } from '@/components/nav/bottom-bar';
+
+// Authenticated chrome: desktop sidebar + mobile bottom bar wrapping page content.
+export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-dvh">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Bottom padding on mobile leaves room for the fixed bottom bar. */}
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-6 md:px-8 md:pb-10">
+          {children}
+        </main>
+      </div>
+      <BottomBar />
+    </div>
+  );
+}

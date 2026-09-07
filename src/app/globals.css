@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme: white backgrounds, near-black text. High contrast, minimal. */
+    --background: oklch(0.223 0.0183 279.84);
+    --foreground: oklch(1 0 0);
+
+    --card: oklch(0.2498 0.0243 281.29);
+    --card-foreground: oklch(0.9838 0.0035 247.86);
+
+    --popover: oklch(0.2498 0.0243 281.29);
+    --popover-foreground: oklch(1 0 0);
+
+    /* Primary = neutral black (used for solid/default buttons in light mode). */
+    --primary: oklch(0.6317 0.1989 275.24);
+    --primary-foreground: oklch(1 0 0);
+
+    --secondary: oklch(0.2883 0.0304 276.56);
+    --secondary-foreground: oklch(0.6275 0.0255 283.24);
+
+    --muted: oklch(0.2498 0.0243 281.29);
+    --muted-foreground: oklch(0.701 0.0199 275.78);
+
+    /* Accent = #D4643F. Single highlight color across the app. */
+    --accent: oklch(0.321 0.0242 281.73);
+    --accent-foreground: oklch(0.9838 0.0035 247.86);
+
+    --destructive: oklch(0.3959 0.1331 25.72);
+    --destructive-foreground: oklch(0.9838 0.0035 247.86);
+
+    --border: oklch(0.353 0.0327 282.22);
+    --input: oklch(0.28 0.0369 259.97);
+    --ring: oklch(0.6317 0.1989 275.24);
+
+    --radius: 0.5rem;
+
+    /* Ambient glow opacity — subtler in light theme. */
+    --glow-opacity: 0.35;
+    --chart-1: var(--primary);
+    --chart-2: oklch(from var(--primary) calc(l - 0.09) calc(c * 0.92) h);
+    --chart-3: oklch(from var(--primary) calc(l - 0.18) calc(c * 0.84) h);
+    --chart-4: oklch(from var(--primary) calc(l - 0.27) calc(c * 0.76) h);
+    --chart-5: oklch(from var(--primary) calc(l - 0.36) calc(c * 0.68) h);
+  }
+
+  .dark {
+    /* Dark theme: near-black backgrounds, near-white text. */
+    --background: oklch(0.223 0.0183 279.84);
+    --foreground: oklch(1 0 0);
+
+    --card: oklch(0.2498 0.0243 281.29);
+    --card-foreground: oklch(0.9838 0.0035 247.86);
+
+    --popover: oklch(0.2498 0.0243 281.29);
+    --popover-foreground: oklch(1 0 0);
+
+    /* In dark mode the accent doubles as the primary CTA fill. */
+    --primary: oklch(0.6317 0.1989 275.24);
+    --primary-foreground: oklch(1 0 0);
+
+    --secondary: oklch(0.2883 0.0304 276.56);
+    --secondary-foreground: oklch(0.6275 0.0255 283.24);
+
+    --muted: oklch(0.2498 0.0243 281.29);
+    --muted-foreground: oklch(0.701 0.0199 275.78);
+
+    --accent: oklch(0.321 0.0242 281.73);
+    --accent-foreground: oklch(0.9838 0.0035 247.86);
+
+    --destructive: oklch(0.3959 0.1331 25.72);
+    --destructive-foreground: oklch(0.9838 0.0035 247.86);
+
+    --border: oklch(0.353 0.0327 282.22);
+    --input: oklch(0.28 0.0369 259.97);
+    --ring: oklch(0.6317 0.1989 275.24);
+
+    /* Ambient glow is more pronounced against the dark background. */
+    --glow-opacity: 0.55;
+    --radius: 0.5rem;
+    --chart-1: var(--primary);
+    --chart-2: oklch(from var(--primary) calc(l - 0.09) calc(c * 0.92) h);
+    --chart-3: oklch(from var(--primary) calc(l - 0.18) calc(c * 0.84) h);
+    --chart-4: oklch(from var(--primary) calc(l - 0.27) calc(c * 0.76) h);
+    --chart-5: oklch(from var(--primary) calc(l - 0.36) calc(c * 0.68) h);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+@layer components {
+  /* Liquid-glass surface — used ONLY on the mobile bottom navigation bar. */
+  .glass-bar {
+    background-color: hsl(var(--background) / 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: 0 -8px 30px -12px hsl(0 0% 0% / 0.25);
+  }
+}
