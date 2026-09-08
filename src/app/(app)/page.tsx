@@ -140,7 +140,7 @@ export default function DashboardPage() {
             </span>
           )}
         </div>
-        <h1 className="mt-1 max-w-4xl text-[1.75rem] font-semibold leading-[1.15] tracking-[-0.03em] md:text-[2.25rem]">
+        <h1 className="mt-1 max-w-4xl font-didot text-[1.75rem] font-normal leading-[1.15] tracking-[-0.025em] md:text-[2.25rem]">
           {client?.name ?? '—'}
         </h1>
       </header>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-center md:gap-8">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-5xl font-semibold leading-none tracking-[-0.04em] tabular-nums">
+                  <span className="font-didot text-5xl font-normal leading-none tracking-[-0.03em] tabular-nums">
                     {closedCount}/{total}
                   </span>
                   <span className="text-sm font-medium text-muted-foreground">{t('progressLabel')}</span>

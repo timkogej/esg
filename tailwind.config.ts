@@ -67,6 +67,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         display: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        didot: ['var(--font-gfs-didot)', 'Didot', 'serif'],
       },
       keyframes: {
         'accordion-down': {
