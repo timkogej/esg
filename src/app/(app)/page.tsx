@@ -2,21 +2,32 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { CheckCircle2, CircleAlert } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  CircleAlert,
+  Database,
+  Download,
+  FileText,
+  Upload,
+} from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import type {
   ClientDatapointValue,
   DataGap,
   DataGapReason,
+  DocumentRow,
   FrameworkDatapoint,
   QuestionnaireQuestion,
 } from '@/lib/supabase/types';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ListRow } from '@/components/ui/list-row';
 import { Progress } from '@/components/ui/progress';
 import { GapResolveDialog } from '@/components/dashboard/gap-resolve-dialog';
 import { formatDatapointValue } from '@/lib/datapoint';
@@ -28,6 +39,7 @@ interface EnrichedGap extends DataGap {
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tReason = useTranslations('gapReason');
+  const tDocStatus = useTranslations('docStatus');
   const locale = useLocale();
   const supabase = getSupabaseBrowserClient();
   const { clientId, client } = useAuth();
@@ -36,46 +48,97 @@ export default function DashboardPage() {
   const [gaps, setGaps] = useState<DataGap[]>([]);
   const [labels, setLabels] = useState<Record<string, string>>({}); // datapoint_id/question_id -> label
   const [recent, setRecent] = useState<ClientDatapointValue[]>([]);
+  const [recentDocuments, setRecentDocuments] = useState<DocumentRow[]>([]);
+  const [approvedTotal, setApprovedTotal] = useState(0);
+  const [documentTotal, setDocumentTotal] = useState(0);
+  const [loadError, setLoadError] = useState(false);
   const [activeGap, setActiveGap] = useState<EnrichedGap | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (!clientId || !client?.reporting_period) return;
+    if (!clientId) return;
+    if (!client?.reporting_period) {
+      setGaps([]);
+      setLabels({});
+      setRecent([]);
+      setRecentDocuments([]);
+      setApprovedTotal(0);
+      setDocumentTotal(0);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
 
     (async () => {
       setLoading(true);
+      setLoadError(false);
 
       // Gaps for the client's current reporting period only.
       // "closed" = status in ('filled','waived'); denominator = gaps in this period.
-      const { data: gapRows } = await supabase
-        .from('data_gaps')
-        .select('*')
-        .eq('client_id', clientId)
-        .eq('reporting_period', client.reporting_period)
-        .returns<DataGap[]>();
+      const [gapResult, approvedResult, approvedCountResult, documentResult, documentCountResult] =
+        await Promise.all([
+          supabase
+            .from('data_gaps')
+            .select('*')
+            .eq('client_id', clientId)
+            .eq('reporting_period', client.reporting_period)
+            .returns<DataGap[]>(),
+          supabase
+            .from('client_datapoint_values')
+            .select('*')
+            .eq('client_id', clientId)
+            .eq('status', 'qa_approved')
+            .limit(5)
+            .returns<ClientDatapointValue[]>(),
+          supabase
+            .from('client_datapoint_values')
+            .select('id', { count: 'exact', head: true })
+            .eq('client_id', clientId)
+            .eq('status', 'qa_approved'),
+          supabase
+            .from('documents')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('created_at', { ascending: false })
+            .limit(3)
+            .returns<DocumentRow[]>(),
+          supabase
+            .from('documents')
+            .select('id', { count: 'exact', head: true })
+            .eq('client_id', clientId),
+        ]);
+
+      const gapRows = gapResult.data;
 
       const allGaps = gapRows ?? [];
+      const approvedRows = approvedResult.data ?? [];
 
       // Resolve human-readable labels: framework_datapoints.label for datapoint
       // gaps, questionnaire_questions.question_text when question_id is set.
-      const dpIds = [...new Set(allGaps.map((g) => g.datapoint_id).filter(Boolean))] as string[];
+      const dpIds = [
+        ...new Set([
+          ...allGaps.map((g) => g.datapoint_id).filter(Boolean),
+          ...approvedRows.map((value) => value.datapoint_id),
+        ]),
+      ] as string[];
       const qIds = [...new Set(allGaps.map((g) => g.question_id).filter(Boolean))] as string[];
 
       const labelMap: Record<string, string> = {};
+      let metadataError = false;
 
       if (dpIds.length) {
-        const { data: dps } = await supabase
+        const { data: dps, error: datapointError } = await supabase
           .from('framework_datapoints')
           .select('id, label')
           .in('id', dpIds)
           .returns<Pick<FrameworkDatapoint, 'id' | 'label'>[]>();
+        metadataError = metadataError || Boolean(datapointError);
         dps?.forEach((d) => {
           if (d.label) labelMap[d.id] = d.label;
         });
       }
       if (qIds.length) {
-        const { data: qs } = await supabase
+        const { data: qs, error: questionError } = await supabase
           .from('questionnaire_questions')
           .select('id, question_text, question_text_translations')
           .in('id', qIds)
@@ -84,6 +147,7 @@ export default function DashboardPage() {
               question_text_translations: Record<string, string> | null;
             })[]
           >();
+        metadataError = metadataError || Boolean(questionError);
         qs?.forEach((q) => {
           const translated = q.question_text_translations?.[locale];
           const text = translated || q.question_text;
@@ -91,19 +155,23 @@ export default function DashboardPage() {
         });
       }
 
-      // A short list of recently confirmed datapoints (qa_approved).
-      const { data: approved } = await supabase
-        .from('client_datapoint_values')
-        .select('*')
-        .eq('client_id', clientId)
-        .eq('status', 'qa_approved')
-        .limit(5)
-        .returns<ClientDatapointValue[]>();
-
       if (cancelled) return;
       setGaps(allGaps);
       setLabels(labelMap);
-      setRecent(approved ?? []);
+      setRecent(approvedRows);
+      setRecentDocuments(documentResult.data ?? []);
+      setApprovedTotal(approvedCountResult.count ?? approvedResult.data?.length ?? 0);
+      setDocumentTotal(documentCountResult.count ?? documentResult.data?.length ?? 0);
+      setLoadError(
+        Boolean(
+          gapResult.error ||
+            metadataError ||
+            approvedResult.error ||
+            approvedCountResult.error ||
+            documentResult.error ||
+            documentCountResult.error,
+        ),
+      );
       setLoading(false);
     })();
 
@@ -129,141 +197,282 @@ export default function DashboardPage() {
     return labels[key] ?? reasonLabel(g.reason);
   }
 
+  const visibleGaps = openGaps.slice(0, 4);
+  const remainingGapCount = Math.max(openGaps.length - visibleGaps.length, 0);
+  const shortDate = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+
   return (
-    <div>
+    <div className="mx-auto max-w-[1120px]">
       <header className="mb-7 md:mb-9">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm text-muted-foreground">{t('welcome')}</p>
+          <p className="text-[0.8125rem] text-muted-foreground">{t('welcome')}</p>
           {client?.reporting_period && (
-            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium tabular-nums text-muted-foreground">
-              {client.reporting_period}
+            <span className="rounded-full bg-secondary px-2.5 py-1 text-[0.6875rem] font-medium tabular-nums text-muted-foreground">
+              {t('reportingPeriod')} {client.reporting_period}
             </span>
           )}
         </div>
-        <h1 className="mt-1 max-w-4xl font-didot text-[1.75rem] font-normal leading-[1.15] tracking-[-0.025em] md:text-[2.25rem]">
+        <h1 className="mt-1.5 max-w-4xl font-didot text-[2rem] font-normal leading-[1.08] tracking-[-0.025em] md:text-[2.75rem]">
           {client?.name ?? '—'}
         </h1>
       </header>
 
-      <section className="mb-10 md:mb-12" aria-label={t('progressLabel')}>
-        <Card>
-          <CardContent className="p-5 md:p-6">
-            {loading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-12 w-44" />
-                <Skeleton className="h-2.5 w-full" />
+      {loadError && !loading && (
+        <div className="mb-5 flex items-center justify-between gap-4 rounded-xl bg-destructive/[0.08] px-4 py-3 text-sm text-destructive ring-1 ring-destructive/[0.15]" role="alert">
+          <span>{t('loadError')}</span>
+          <Button variant="ghost" size="xs" onClick={() => setReloadKey((key) => key + 1)}>
+            {t('retry')}
+          </Button>
+        </div>
+      )}
+
+      <section
+        className="mb-8 overflow-hidden rounded-[1.25rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025),0_12px_36px_rgb(0_0_0/0.035)] ring-1 ring-border/70 dark:shadow-none"
+        aria-labelledby="reporting-overview-title"
+      >
+        <div className="p-5 sm:p-6 md:p-8">
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <p id="reporting-overview-title" className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                {t('reportingOverview')}
+              </p>
+              <p className="mt-1.5 max-w-xl text-sm leading-5 text-muted-foreground">
+                {loading ? t('loadingOverview') : total === 0 ? t('noRequirements') : t('progressSummary', { count: openGaps.length })}
+              </p>
+            </div>
+            {!loading && (
+              <span
+                className={openGaps.length > 0
+                  ? 'shrink-0 rounded-full bg-brand px-2.5 py-1 text-[0.6875rem] font-semibold text-white'
+                  : 'shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[0.6875rem] font-semibold text-muted-foreground'}
+              >
+                {openGaps.length > 0 ? t('needsAttention') : t('upToDate')}
+              </span>
+            )}
+          </div>
+
+          {loading ? (
+            <div className="space-y-5">
+              <Skeleton className="h-16 w-52" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ) : total === 0 ? (
+            <div className="flex min-h-24 items-center gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary">
+                <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{t('allDone')}</p>
+                <p className="mt-1 text-[0.8125rem] text-muted-foreground">{t('nothingPending')}</p>
               </div>
-            ) : total === 0 ? (
-              <div className="flex min-h-20 items-center gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-                </span>
-                <div>
-                  <p className="font-semibold">{t('noRequirements')}</p>
-                  <p className="mt-0.5 text-sm text-muted-foreground">{t('allDone')}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-center md:gap-8">
+            </div>
+          ) : (
+            <div>
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex items-baseline gap-3">
-                  <span className="font-didot text-5xl font-normal leading-none tracking-[-0.03em] tabular-nums">
+                  <span className="font-didot text-[4rem] font-normal leading-[0.85] tracking-[-0.035em] tabular-nums md:text-[5rem]">
                     {closedCount}/{total}
                   </span>
-                  <span className="text-sm font-medium text-muted-foreground">{t('progressLabel')}</span>
+                  <span className="pb-1 text-[0.8125rem] font-medium text-muted-foreground">{t('progressLabel')}</span>
                 </div>
-                <div>
-                  <div className="mb-2 flex items-center justify-end text-xs font-medium text-muted-foreground">
-                    <span className="tabular-nums">{completionPercent}%</span>
-                  </div>
-                  <Progress value={closedCount} max={total} label={t('progressLabel')} />
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold tabular-nums">{completionPercent}%</span>
+                  {openGaps[0] && (
+                    <Button
+                      variant="accent"
+                      size="sm"
+                      onClick={() => setActiveGap({ ...openGaps[0], label: gapLabel(openGaps[0]) })}
+                    >
+                      {t('continue')}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="open-gaps-title">
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <div>
-            <h2 id="open-gaps-title" className="text-xl font-semibold tracking-[-0.015em]">
-              {t('openGapsTitle')}
-            </h2>
-            <p className="mt-1 text-[0.9375rem] text-muted-foreground">{t('openGapsSubtitle')}</p>
-          </div>
-          {!loading && openGaps.length > 0 && (
-            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold tabular-nums text-muted-foreground">
-              {openGaps.length}
-            </span>
+              <Progress className="mt-6 h-2" value={closedCount} max={total} label={t('progressLabel')} />
+            </div>
           )}
         </div>
 
-        {loading ? (
-          <div className="overflow-hidden rounded-xl border bg-card">
-            {[0, 1, 2].map((i) => (
-              <ListRow key={i}>
-                <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-              </ListRow>
-            ))}
+        <div className="grid border-t border-border/70 bg-secondary/10 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: CircleAlert, label: t('openRequirements'), value: loading ? null : openGaps.length },
+            { icon: CheckCircle2, label: t('approvedValues'), value: loading ? null : approvedTotal },
+            { icon: FileText, label: t('uploadedDocuments'), value: loading ? null : documentTotal },
+            { icon: CalendarDays, label: t('reportingPeriod'), value: loading ? null : client?.reporting_period ?? '—' },
+          ].map(({ icon: Icon, label, value }, index) => (
+            <div
+              key={label}
+              className={`flex min-h-20 items-center gap-3 px-5 py-4 ${index > 0 ? 'border-t border-border/60' : ''} ${index === 1 ? 'sm:border-l sm:border-t-0' : ''} ${index === 2 ? 'sm:border-l-0 lg:border-l lg:border-t-0' : ''} ${index === 3 ? 'sm:border-l lg:border-t-0' : ''}`}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/80 text-muted-foreground ring-1 ring-border/60">
+                <Icon aria-hidden="true" className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                {value === null ? <Skeleton className="mb-1 h-4 w-9" /> : <p className="text-base font-semibold tabular-nums">{value}</p>}
+                <p className="truncate text-[0.6875rem] text-muted-foreground">{label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(17rem,0.8fr)]">
+        <section aria-labelledby="open-gaps-title">
+          <div className="mb-3 flex items-end justify-between gap-4">
+            <div>
+              <h2 id="open-gaps-title" className="text-base font-semibold tracking-[-0.015em]">
+                {t('attentionTitle')}
+              </h2>
+              <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('openGapsSubtitle')}</p>
+            </div>
+            {!loading && openGaps.length > 0 && (
+              <span className="rounded-full bg-secondary px-2 py-1 text-[0.6875rem] font-semibold tabular-nums text-muted-foreground">
+                {openGaps.length}
+              </span>
+            )}
           </div>
-        ) : openGaps.length === 0 ? (
-          <div className="flex min-h-28 items-center gap-4 rounded-xl border bg-card px-5 py-6">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-              <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-            </span>
-            <p className="text-sm font-medium">{t('allDone')}</p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border bg-card">
-            {openGaps.map((g) => (
-              <ListRow key={g.id} className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand" aria-hidden />
-                  <div className="min-w-0">
-                    <p className="font-medium leading-6">{gapLabel(g)}</p>
-                    <div className="mt-1.5">
-                      <Badge variant="muted">
-                        {t('reasonLabel')}: {reasonLabel(g.reason)}
-                      </Badge>
-                    </div>
+
+          {loading ? (
+            <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="flex min-h-[4.5rem] items-center gap-3 border-b border-border/70 px-4 py-3 last:border-0">
+                  <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-3.5 w-2/3" />
+                    <Skeleton className="h-3 w-28" />
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 border-brand/50 text-brand-text hover:bg-brand/10 sm:self-center"
-                  onClick={() => setActiveGap({ ...g, label: gapLabel(g) })}
-                >
-                  <CircleAlert className="h-4 w-4" />
-                  {t('resolve')}
-                </Button>
-              </ListRow>
-            ))}
+              ))}
+            </div>
+          ) : openGaps.length === 0 ? (
+            <div className="flex min-h-28 items-center gap-3 rounded-[0.875rem] bg-card px-4 py-5 ring-1 ring-border/70">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary">
+                <Check className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <div>
+                <p className="text-[0.8125rem] font-medium">{t('allDone')}</p>
+                <p className="mt-0.5 text-[0.6875rem] text-muted-foreground">{t('nothingPending')}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
+              {visibleGaps.map((gap) => (
+                <div key={gap.id} className="group flex min-h-[4.5rem] items-center gap-3 border-b border-border/70 px-4 py-3 transition-colors duration-150 last:border-0 hover:bg-secondary/20">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand-text">
+                    <CircleAlert aria-hidden="true" className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.8125rem] font-medium">{gapLabel(gap)}</p>
+                    <p className="mt-0.5 truncate text-[0.6875rem] text-muted-foreground">
+                      {reasonLabel(gap.reason)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="shrink-0 text-muted-foreground group-hover:text-foreground"
+                    onClick={() => setActiveGap({ ...gap, label: gapLabel(gap) })}
+                  >
+                    {t('resolve')}
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+              {remainingGapCount > 0 && (
+                <div className="border-t border-border/70 bg-secondary/10 px-4 py-2.5 text-center text-[0.6875rem] text-muted-foreground">
+                  {t('moreRequirements', { count: remainingGapCount })}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        <aside aria-labelledby="quick-actions-title">
+          <div className="mb-3">
+            <h2 id="quick-actions-title" className="text-base font-semibold tracking-[-0.015em]">{t('quickActions')}</h2>
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('quickActionsHint')}</p>
+          </div>
+          <div className="overflow-hidden rounded-[0.875rem] bg-card p-2 ring-1 ring-border/70">
+            <Button asChild variant="accent" className="h-10 w-full justify-between px-3">
+              <Link href="/documents">
+                <span className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  {t('uploadDocument')}
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Link href="/data" className="mt-1.5 flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-colors hover:bg-secondary">
+              <span className="flex items-center gap-2"><Database className="h-4 w-4 text-muted-foreground" />{t('reviewData')}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+            <Link href="/downloads" className="flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-colors hover:bg-secondary">
+              <span className="flex items-center gap-2"><Download className="h-4 w-4 text-muted-foreground" />{t('openDownloads')}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          </div>
+        </aside>
+      </div>
+
+      <section className="mt-9" aria-labelledby="recent-activity-title">
+        <div className="mb-3">
+          <h2 id="recent-activity-title" className="text-base font-semibold tracking-[-0.015em]">{t('recentActivity')}</h2>
+          <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('recentActivityHint')}</p>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {[0, 1].map((item) => <Skeleton key={item} className="h-36 rounded-[0.875rem]" />)}
+          </div>
+        ) : recentDocuments.length === 0 && recent.length === 0 ? (
+          <div className="rounded-[0.875rem] bg-card px-4 py-8 text-center text-[0.8125rem] text-muted-foreground ring-1 ring-border/70">
+            {t('noRecentActivity')}
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
+              <div className="flex h-11 items-center justify-between border-b border-border/70 px-4">
+                <h3 className="text-[0.8125rem] font-semibold">{t('recentDocuments')}</h3>
+                <Link href="/documents" className="text-[0.6875rem] font-medium text-muted-foreground hover:text-foreground">{t('viewAll')}</Link>
+              </div>
+              {recentDocuments.length === 0 ? (
+                <p className="px-4 py-6 text-[0.6875rem] text-muted-foreground">{t('noRecentDocuments')}</p>
+              ) : recentDocuments.map((document) => (
+                <div key={document.id} className="flex min-h-[3.75rem] items-center gap-3 border-b border-border/70 px-4 py-2.5 last:border-0">
+                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.8125rem] font-medium">{document.original_filename}</p>
+                    <p className="mt-0.5 text-[0.6875rem] text-muted-foreground">{shortDate.format(new Date(document.created_at))}</p>
+                  </div>
+                  <Badge variant="muted" className="shrink-0 text-[0.625rem]">{tDocStatus(document.status)}</Badge>
+                </div>
+              ))}
+            </div>
+
+            <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
+              <div className="flex h-11 items-center justify-between border-b border-border/70 px-4">
+                <h3 className="text-[0.8125rem] font-semibold">{t('recentApproved')}</h3>
+                <Link href="/data" className="text-[0.6875rem] font-medium text-muted-foreground hover:text-foreground">{t('viewAll')}</Link>
+              </div>
+              {recent.length === 0 ? (
+                <p className="px-4 py-6 text-[0.6875rem] text-muted-foreground">{t('noApprovedValues')}</p>
+              ) : recent.slice(0, 3).map((value) => (
+                <div key={value.id} className="flex min-h-[3.75rem] items-center gap-3 border-b border-border/70 px-4 py-2.5 last:border-0">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.8125rem] font-medium">{labels[value.datapoint_id] ?? t('confirmedValue')}</p>
+                    <p className="mt-0.5 text-[0.6875rem] tabular-nums text-muted-foreground">{value.reporting_period ?? client?.reporting_period ?? ''}</p>
+                  </div>
+                  <span className="max-w-[45%] truncate text-right text-[0.8125rem] font-semibold tabular-nums">
+                    {formatDatapointValue(value)} {value.unit ?? ''}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
-
-      {!loading && openGaps.length === 0 && recent.length > 0 && (
-        <section className="mt-10 md:mt-12" aria-labelledby="recent-approved-title">
-          <h2 id="recent-approved-title" className="mb-4 text-xl font-semibold tracking-[-0.015em]">
-            {t('recentApproved')}
-          </h2>
-          <div className="overflow-hidden rounded-xl border bg-card">
-            {recent.map((v) => (
-              <ListRow key={v.id} className="justify-between">
-                <span className="text-sm tabular-nums text-muted-foreground">{v.reporting_period ?? ''}</span>
-                <span className="text-right text-sm font-semibold tabular-nums">
-                  {formatDatapointValue(v)} {v.unit ?? ''}
-                </span>
-              </ListRow>
-            ))}
-          </div>
-        </section>
-      )}
 
       <GapResolveDialog
         open={activeGap !== null}
