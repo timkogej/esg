@@ -140,6 +140,7 @@
     "date": "Date",
     "actions": "Actions",
     "loading": "Loading documents",
+    "loadError": "Documents cannot be displayed right now.",
     "noDocuments": "No documents uploaded yet.",
     "emptyHint": "Upload your first document above.",
     "noSearchResults": "No results for this search.",
@@ -173,6 +174,7 @@
     "allClearTitle": "Everything is reviewed",
     "goToDocuments": "Open documents",
     "loading": "Loading data for review",
+    "loadError": "The data for review cannot be displayed right now.",
     "reviewTitle": "Ready for your review",
     "reviewHint": "Check the values and their sources, then confirm them together.",
     "reviewCount": "To review: {count}",
@@ -205,6 +207,7 @@
     "emptyTitle": "No downloads yet",
     "emptyHint": "New reports and exports will appear here as soon as they are ready.",
     "loading": "Loading downloads",
+    "loadError": "Downloads cannot be displayed right now.",
     "period": "Period",
     "version": "Version",
     "alignedDraftBadge": "Draft, aligned with VSME",
@@ -213,6 +216,9 @@
   "notifications": {
     "title": "Notifications",
     "empty": "No notifications.",
+    "emptyHint": "New notifications will appear here.",
+    "loading": "Loading notifications",
+    "loadError": "Notifications cannot be displayed right now.",
     "markRead": "Mark as read",
     "unread": "unread"
   },

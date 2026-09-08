@@ -140,6 +140,7 @@
     "date": "Datum",
     "actions": "Aktionen",
     "loading": "Dokumente werden geladen",
+    "loadError": "Dokumente können derzeit nicht angezeigt werden.",
     "noDocuments": "Noch keine Dokumente hochgeladen.",
     "emptyHint": "Das erste Dokument können Sie oben hochladen.",
     "noSearchResults": "Keine Ergebnisse für diese Suche.",
@@ -173,6 +174,7 @@
     "allClearTitle": "Alles geprüft",
     "goToDocuments": "Dokumente öffnen",
     "loading": "Daten zur Prüfung werden geladen",
+    "loadError": "Die zu prüfenden Daten können derzeit nicht angezeigt werden.",
     "reviewTitle": "Bereit für Ihre Prüfung",
     "reviewHint": "Prüfen Sie Werte und Quellen und bestätigen Sie sie anschließend gemeinsam.",
     "reviewCount": "Zu prüfen: {count}",
@@ -205,6 +207,7 @@
     "emptyTitle": "Derzeit keine Downloads",
     "emptyHint": "Neue Berichte und Exporte erscheinen hier, sobald sie bereit sind.",
     "loading": "Downloads werden geladen",
+    "loadError": "Downloads können derzeit nicht angezeigt werden.",
     "period": "Zeitraum",
     "version": "Version",
     "alignedDraftBadge": "Entwurf, an VSME angelehnt",
@@ -213,6 +216,9 @@
   "notifications": {
     "title": "Benachrichtigungen",
     "empty": "Keine Benachrichtigungen.",
+    "emptyHint": "Neue Benachrichtigungen erscheinen hier.",
+    "loading": "Benachrichtigungen werden geladen",
+    "loadError": "Benachrichtigungen können derzeit nicht angezeigt werden.",
     "markRead": "Als gelesen markieren",
     "unread": "ungelesen"
   },

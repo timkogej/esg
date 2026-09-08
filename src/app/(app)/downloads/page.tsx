@@ -10,7 +10,9 @@ import { downloadFromStorage } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ListRow } from '@/components/ui/list-row';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { StatePanel } from '@/components/ui/state-panel';
+import { StatusNotice } from '@/components/ui/status-notice';
 
 // output_mode is ALWAYS 'aligned_draft' in year 1 — never 'compliant'. We never
 // render the words "compliant"/"skladno" anywhere in the UI.
@@ -26,6 +28,8 @@ export default function DownloadsPage() {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [exports, setExports] = useState<QuestionnaireExport[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!clientId) return;
@@ -33,6 +37,7 @@ export default function DownloadsPage() {
 
     (async () => {
       setLoading(true);
+      setLoadError(false);
       const [reportRes, exportRes] = await Promise.all([
         supabase
           .from('reports')
@@ -48,6 +53,13 @@ export default function DownloadsPage() {
           .returns<QuestionnaireExport[]>(),
       ]);
       if (cancelled) return;
+      if (reportRes.error || exportRes.error) {
+        setReports([]);
+        setExports([]);
+        setLoadError(true);
+        setLoading(false);
+        return;
+      }
       setReports(reportRes.data ?? []);
       setExports(exportRes.data ?? []);
       setLoading(false);
@@ -56,7 +68,7 @@ export default function DownloadsPage() {
     return () => {
       cancelled = true;
     };
-  }, [supabase, clientId]);
+  }, [supabase, clientId, reloadKey]);
 
   async function download(path: string | null, filename: string) {
     if (!path) return;
@@ -78,45 +90,24 @@ export default function DownloadsPage() {
       </header>
 
       {error && (
-        <p
-          className="mb-5 flex items-start gap-2.5 rounded-xl bg-destructive/10 px-3.5 py-3 text-[0.8125rem] leading-5 text-destructive ring-1 ring-destructive/15"
-          role="alert"
-        >
-          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-          {error}
-        </p>
+        <StatusNotice className="mb-5">{error}</StatusNotice>
       )}
 
       {loading ? (
-        <div
-          className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none"
-          aria-label={t('loading')}
-        >
-          <div className="border-b border-border/70 bg-secondary/15 px-4 py-3">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="mt-2 h-3 w-52 max-w-full" />
-          </div>
-          {[0, 1, 2].map((i) => (
-            <ListRow key={i} className="min-h-14 gap-3 px-4 py-2.5">
-              <Skeleton className="h-8 w-8 shrink-0" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-3 w-1/4" />
-              </div>
-              <Skeleton className="h-8 w-24" />
-            </ListRow>
-          ))}
-        </div>
+        <ListSkeleton label={t('loading')} header />
+      ) : loadError ? (
+        <StatePanel
+          icon={AlertCircle}
+          tone="error"
+          title={t('loadError')}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
+              {tCommon('retry')}
+            </Button>
+          }
+        />
       ) : reports.length === 0 && exports.length === 0 ? (
-        <div className="rounded-[0.875rem] bg-card px-6 py-12 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04),0_6px_20px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
-            <Download aria-hidden="true" className="h-5 w-5" />
-          </div>
-          <h2 className="text-base font-semibold tracking-[-0.015em]">{t('emptyTitle')}</h2>
-          <p className="mx-auto mt-1 max-w-md text-[0.8125rem] leading-5 text-muted-foreground">
-            {t('emptyHint')}
-          </p>
-        </div>
+        <StatePanel icon={Download} title={t('emptyTitle')} description={t('emptyHint')} />
       ) : (
         <div className="space-y-7">
           <section aria-labelledby="reports-title">
@@ -133,9 +124,7 @@ export default function DownloadsPage() {
             </div>
 
             {reports.length === 0 ? (
-              <div className="rounded-[0.875rem] bg-card px-4 py-7 text-center text-[0.8125rem] text-muted-foreground ring-1 ring-border/70">
-                {t('noItems')}
-              </div>
+              <StatePanel icon={FileText} title={t('noItems')} compact />
             ) : (
               <div className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
                 {reports.map((report) => {
@@ -200,9 +189,7 @@ export default function DownloadsPage() {
             </div>
 
             {exports.length === 0 ? (
-              <div className="rounded-[0.875rem] bg-card px-4 py-7 text-center text-[0.8125rem] text-muted-foreground ring-1 ring-border/70">
-                {t('noItems')}
-              </div>
+              <StatePanel icon={FileSpreadsheet} title={t('noItems')} compact />
             ) : (
               <div className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
                 {exports.map((item) => {

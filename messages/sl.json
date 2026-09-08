@@ -140,6 +140,7 @@
     "date": "Datum",
     "actions": "Dejanja",
     "loading": "Nalaganje dokumentov",
+    "loadError": "Dokumentov trenutno ni mogoče prikazati.",
     "noDocuments": "Še ni naloženih dokumentov.",
     "emptyHint": "Prvi dokument lahko naložite zgoraj.",
     "noSearchResults": "Za ta iskalni niz ni rezultatov.",
@@ -173,6 +174,7 @@
     "allClearTitle": "Vse je pregledano",
     "goToDocuments": "Odpri dokumente",
     "loading": "Nalaganje podatkov za pregled",
+    "loadError": "Podatkov za pregled trenutno ni mogoče prikazati.",
     "reviewTitle": "Pripravljeno za vaš pregled",
     "reviewHint": "Preverite vrednosti in vire, nato jih potrdite skupaj.",
     "reviewCount": "Za pregled: {count}",
@@ -205,6 +207,7 @@
     "emptyTitle": "Trenutno ni prenosov",
     "emptyHint": "Nova poročila in izvozi se bodo tukaj prikazali takoj, ko bodo pripravljeni.",
     "loading": "Nalaganje datotek za prenos",
+    "loadError": "Datotek za prenos trenutno ni mogoče prikazati.",
     "period": "Obdobje",
     "version": "Različica",
     "alignedDraftBadge": "Osnutek, usklajen z VSME",
@@ -213,6 +216,9 @@
   "notifications": {
     "title": "Obvestila",
     "empty": "Ni obvestil.",
+    "emptyHint": "Nova obvestila se bodo prikazala tukaj.",
+    "loading": "Nalaganje obvestil",
+    "loadError": "Obvestil trenutno ni mogoče prikazati.",
     "markRead": "Označi kot prebrano",
     "unread": "neprebrano"
   },

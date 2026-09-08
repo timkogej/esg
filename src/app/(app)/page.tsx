@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { StatusNotice } from '@/components/ui/status-notice';
 import { GapResolveDialog } from '@/components/dashboard/gap-resolve-dialog';
 import { formatDatapointValue } from '@/lib/datapoint';
 
@@ -218,12 +219,16 @@ export default function DashboardPage() {
       </header>
 
       {loadError && !loading && (
-        <div className="mb-5 flex items-center justify-between gap-4 rounded-xl bg-destructive/[0.08] px-4 py-3 text-sm text-destructive ring-1 ring-destructive/[0.15]" role="alert">
-          <span>{t('loadError')}</span>
-          <Button variant="ghost" size="xs" onClick={() => setReloadKey((key) => key + 1)}>
-            {t('retry')}
-          </Button>
-        </div>
+        <StatusNotice
+          className="mb-5"
+          action={
+            <Button variant="ghost" size="xs" onClick={() => setReloadKey((key) => key + 1)}>
+              {t('retry')}
+            </Button>
+          }
+        >
+          {t('loadError')}
+        </StatusNotice>
       )}
 
       <section

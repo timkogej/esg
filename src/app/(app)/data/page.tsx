@@ -25,7 +25,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ListRow } from '@/components/ui/list-row';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { StatePanel } from '@/components/ui/state-panel';
+import { StatusNotice } from '@/components/ui/status-notice';
 import { formatDatapointValue } from '@/lib/datapoint';
 import { downloadFromStorage } from '@/lib/storage';
 
@@ -38,6 +40,7 @@ interface ReviewItem extends ClientDatapointValue {
 
 export default function DataPage() {
   const t = useTranslations('data');
+  const tCommon = useTranslations('common');
   const supabase = getSupabaseBrowserClient();
   const { clientId, contact, session } = useAuth();
 
@@ -47,6 +50,8 @@ export default function DataPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   // Varovalka: true, ko obstajajo datapoint_id-ji za katere ne moremo naložiti
   // labelov iz framework_datapoints. Skoraj vedno pomeni RLS blokado branja te
   // referenčne tabele za prijavljenega uporabnika (poizvedba tiho vrne 0 vrstic).
@@ -58,17 +63,27 @@ export default function DataPage() {
 
     (async () => {
       setLoading(true);
+      setLoadError(false);
 
       // Only values the client can meaningfully confirm. Calculated values
       // (provenance='calculated') are excluded: the client must not attest them and
       // the backend workflow ignores any attestation for those rows anyway.
-      const { data: values } = await supabase
+      const { data: values, error: valuesError } = await supabase
         .from('client_datapoint_values')
         .select('*')
         .eq('client_id', clientId)
         .eq('status', 'needs_review')
         .in('provenance', ['extracted', 'client_entered'])
         .returns<ClientDatapointValue[]>();
+
+      if (valuesError) {
+        if (!cancelled) {
+          setItems([]);
+          setLoadError(true);
+          setLoading(false);
+        }
+        return;
+      }
 
       const rows = values ?? [];
       const dpIds = [...new Set(rows.map((r) => r.datapoint_id).filter(Boolean))];
@@ -152,7 +167,7 @@ export default function DataPage() {
     return () => {
       cancelled = true;
     };
-  }, [supabase, clientId]);
+  }, [supabase, clientId, reloadKey]);
 
   // Group by framework module for a readable overview.
   const grouped = useMemo(() => {
@@ -209,61 +224,43 @@ export default function DataPage() {
       </header>
 
       {loading ? (
-        <div
-          className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none"
-          aria-label={t('loading')}
-        >
-          <div className="border-b border-border/70 bg-secondary/15 px-4 py-3">
-            <Skeleton className="h-4 w-36" />
-            <Skeleton className="mt-2 h-3 w-56 max-w-full" />
-          </div>
-          {[0, 1, 2].map((i) => (
-            <ListRow key={i} className="min-h-14 gap-3 px-4 py-2.5">
-              <Skeleton className="h-8 w-8 shrink-0" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-              <Skeleton className="h-7 w-24" />
-            </ListRow>
-          ))}
-        </div>
+        <ListSkeleton label={t('loading')} header />
+      ) : loadError ? (
+        <StatePanel
+          icon={AlertTriangle}
+          tone="error"
+          title={t('loadError')}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
+              {tCommon('retry')}
+            </Button>
+          }
+        />
       ) : done ? (
-        <div className="rounded-[0.875rem] bg-card px-6 py-12 text-center shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success">
-            <CheckCircle2 aria-hidden="true" className="h-5 w-5" />
-          </div>
-          <h2 className="text-base font-semibold tracking-[-0.015em]">{t('attestSuccessTitle')}</h2>
-          <p className="mx-auto mt-1 max-w-md text-[0.8125rem] leading-5 text-muted-foreground">
-            {t('attestSuccess')}
-          </p>
-        </div>
+        <StatePanel
+          icon={CheckCircle2}
+          tone="success"
+          title={t('attestSuccessTitle')}
+          description={t('attestSuccess')}
+        />
       ) : items.length === 0 ? (
-        <div className="rounded-[0.875rem] bg-card px-6 py-12 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04),0_6px_20px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/60 text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
-            <ShieldCheck aria-hidden="true" className="h-5 w-5" />
-          </div>
-          <h2 className="text-base font-semibold tracking-[-0.015em]">{t('allClearTitle')}</h2>
-          <p className="mx-auto mt-1 max-w-md text-[0.8125rem] leading-5 text-muted-foreground">
-            {t('noPending')}
-          </p>
-          <Button asChild variant="secondary" size="sm" className="mt-4">
+        <StatePanel
+          icon={ShieldCheck}
+          title={t('allClearTitle')}
+          description={t('noPending')}
+          action={<Button asChild variant="secondary" size="sm">
             <Link href="/documents">
               {t('goToDocuments')}
               <ChevronRight aria-hidden="true" />
             </Link>
-          </Button>
-        </div>
+          </Button>}
+        />
       ) : (
         <>
           {labelsMissing && (
-            <div
-              className="mb-5 flex items-start gap-2.5 rounded-xl bg-destructive/10 px-3.5 py-3 text-destructive ring-1 ring-destructive/15"
-              role="alert"
-            >
-              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+            <StatusNotice className="mb-5" icon={AlertTriangle}>
               <p className="text-[0.8125rem] leading-5">{t('labelsMissingWarning')}</p>
-            </div>
+            </StatusNotice>
           )}
 
           <div className="mb-6 flex flex-col gap-3 rounded-[0.875rem] bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between">

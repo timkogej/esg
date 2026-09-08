@@ -25,6 +25,9 @@ import { Input } from '@/components/ui/input';
 import { ListRow } from '@/components/ui/list-row';
 import { SelectField } from '@/components/ui/select-field';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { StatePanel } from '@/components/ui/state-panel';
+import { StatusNotice } from '@/components/ui/status-notice';
 import { cn } from '@/lib/utils';
 
 function isPdf(doc: DocumentRow): boolean {
@@ -33,12 +36,14 @@ function isPdf(doc: DocumentRow): boolean {
 
 export default function DocumentsPage() {
   const t = useTranslations('documents');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const supabase = getSupabaseBrowserClient();
   const { clientId } = useAuth();
 
   const [docs, setDocs] = useState<DocumentRow[]>([]);
   const [docsLoading, setDocsLoading] = useState(true);
+  const [docsLoadError, setDocsLoadError] = useState(false);
   const [locations, setLocations] = useState<DbLocation[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [selectedLocationId, setSelectedLocationId] = useState('');
@@ -53,14 +58,19 @@ export default function DocumentsPage() {
     async (showLoading = false) => {
       if (!clientId) return;
       if (showLoading) setDocsLoading(true);
-      const { data } = await supabase
+      const { data, error: docsError } = await supabase
         .from('documents')
         .select('*')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(25)
         .returns<DocumentRow[]>();
-      setDocs(data ?? []);
+      if (docsError) {
+        if (showLoading) setDocsLoadError(true);
+      } else {
+        setDocs(data ?? []);
+        setDocsLoadError(false);
+      }
       if (showLoading) setDocsLoading(false);
     },
     [supabase, clientId],
@@ -313,13 +323,7 @@ export default function DocumentsPage() {
       </section>
 
       {error && (
-        <p
-          className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-          role="alert"
-        >
-          <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-          {error}
-        </p>
+        <StatusNotice className="mt-4">{error}</StatusNotice>
       )}
 
       {/* Recently uploaded list with live status. */}
@@ -364,30 +368,33 @@ export default function DocumentsPage() {
           </div>
 
           {docsLoading ? (
-            <div aria-label={t('loading')}>
-              {[0, 1, 2].map((item) => (
-                <ListRow key={item} className="gap-3">
-                  <Skeleton className="h-9 w-9 shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-3 w-1/3 md:hidden" />
-                  </div>
-                  <Skeleton className="h-6 w-20" />
-                </ListRow>
-              ))}
-            </div>
+            <ListSkeleton label={t('loading')} contained={false} />
+          ) : docsLoadError ? (
+            <StatePanel
+              icon={AlertCircle}
+              tone="error"
+              title={t('loadError')}
+              action={
+                <Button variant="secondary" size="sm" onClick={() => void loadDocs(true)}>
+                  {tCommon('retry')}
+                </Button>
+              }
+              className="rounded-none py-12 ring-0"
+            />
           ) : docs.length === 0 ? (
-            <div className="px-6 py-14 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                <FileText aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-medium">{t('noDocuments')}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t('emptyHint')}</p>
-            </div>
+            <StatePanel
+              icon={FileText}
+              title={t('noDocuments')}
+              description={t('emptyHint')}
+              className="rounded-none py-14 ring-0"
+            />
           ) : filteredAndSorted.length === 0 ? (
-            <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-              {t('noSearchResults')}
-            </div>
+            <StatePanel
+              icon={Search}
+              title={t('noSearchResults')}
+              compact
+              className="rounded-none py-12 ring-0"
+            />
           ) : (
             <div>
               <div className="hidden grid-cols-[minmax(0,1fr)_minmax(8rem,.45fr)_8rem_7.5rem_5rem] gap-4 border-b border-border/70 bg-secondary/20 px-4 py-2 text-[0.6875rem] font-medium text-muted-foreground md:grid">

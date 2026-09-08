@@ -1,8 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { BellOff } from 'lucide-react';
 import type { PortalNotification } from '@/lib/supabase/types';
 import { Badge } from '@/components/ui/badge';
+import { StatePanel } from '@/components/ui/state-panel';
 import { cn } from '@/lib/utils';
 
 export function NotificationList({
@@ -15,7 +17,9 @@ export function NotificationList({
   const t = useTranslations('notifications');
 
   if (items.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">{t('empty')}</p>;
+    return (
+      <StatePanel icon={BellOff} title={t('empty')} description={t('emptyHint')} />
+    );
   }
 
   return (
