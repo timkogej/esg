@@ -294,7 +294,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="grid border-t border-border/70 bg-secondary/10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 border-t border-border/70 bg-secondary/10 lg:grid-cols-4">
           {[
             { icon: CircleAlert, label: t('openRequirements'), value: loading ? null : openGaps.length },
             { icon: CheckCircle2, label: t('approvedValues'), value: loading ? null : approvedTotal },
@@ -303,14 +303,14 @@ export default function DashboardPage() {
           ].map(({ icon: Icon, label, value }, index) => (
             <div
               key={label}
-              className={`flex min-h-20 items-center gap-3 px-5 py-4 ${index > 0 ? 'border-t border-border/60' : ''} ${index === 1 ? 'sm:border-l sm:border-t-0' : ''} ${index === 2 ? 'sm:border-l-0 lg:border-l lg:border-t-0' : ''} ${index === 3 ? 'sm:border-l lg:border-t-0' : ''}`}
+              className={`flex min-h-20 items-center gap-3 px-4 py-4 sm:px-5 ${index === 1 ? 'border-l border-border/60' : ''} ${index === 2 ? 'border-t border-border/60 lg:border-l lg:border-t-0' : ''} ${index === 3 ? 'border-l border-t border-border/60 lg:border-t-0' : ''}`}
             >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/80 text-muted-foreground ring-1 ring-border/60">
                 <Icon aria-hidden="true" className="h-4 w-4" />
               </span>
               <div className="min-w-0">
                 {value === null ? <Skeleton className="mb-1 h-4 w-9" /> : <p className="text-base font-semibold tabular-nums">{value}</p>}
-                <p className="truncate text-[0.6875rem] text-muted-foreground">{label}</p>
+                <p className="text-[0.6875rem] leading-4 text-muted-foreground">{label}</p>
               </div>
             </div>
           ))}
