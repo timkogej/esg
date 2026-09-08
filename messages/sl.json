@@ -18,6 +18,7 @@
     "dark": "Temna"
   },
   "nav": {
+    "mobileNavigation": "Glavna navigacija",
     "home": "Domov",
     "documents": "Dokumenti",
     "data": "Podatki",

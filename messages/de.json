@@ -18,6 +18,7 @@
     "dark": "Dunkel"
   },
   "nav": {
+    "mobileNavigation": "Hauptnavigation",
     "home": "Start",
     "documents": "Dokumente",
     "data": "Daten",
