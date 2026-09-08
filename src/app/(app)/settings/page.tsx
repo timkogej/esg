@@ -59,7 +59,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-[1040px]">
       <header className="mb-6">
-        <h1 className="text-[1.625rem] font-semibold leading-tight tracking-[-0.025em] md:text-[1.75rem]">
+        <h1 className="font-didot text-[1.625rem] font-normal leading-tight tracking-[-0.025em] md:text-[1.75rem]">
           {t('title')}
         </h1>
         <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">{t('subtitle')}</p>

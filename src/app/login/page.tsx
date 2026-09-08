@@ -63,7 +63,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm border-border/70 bg-card/80 backdrop-blur">
         <CardContent className="pt-6">
           <div className="mb-6 space-y-1">
-            <h1 className="font-display text-2xl font-bold" style={{ fontWeight: 700 }}>
+            <h1 className="font-didot text-2xl font-normal">
               {t('loginTitle')}
             </h1>
             <p className="text-sm text-muted-foreground">{t('loginSubtitle')}</p>
