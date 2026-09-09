@@ -155,7 +155,7 @@ export default function AcceptInvitePage() {
                 <h1 className="font-didot text-2xl font-normal">
                   {t('acceptInviteTitle')}
                 </h1>
-                <p className="text-sm text-muted-foreground">{t('acceptInviteSubtitle')}</p>
+                <p className="font-didot text-sm text-muted-foreground">{t('acceptInviteSubtitle')}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">

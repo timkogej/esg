@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
             <h1 className="font-didot text-2xl font-normal">
               {mode === 'update' ? t('setNewPassword') : t('resetTitle')}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-didot text-sm text-muted-foreground">
               {mode === 'update' ? t('newPassword') : t('resetSubtitle')}
             </p>
           </div>

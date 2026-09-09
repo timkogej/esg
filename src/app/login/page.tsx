@@ -66,7 +66,7 @@ export default function LoginPage() {
             <h1 className="font-didot text-2xl font-normal">
               {t('loginTitle')}
             </h1>
-            <p className="text-sm text-muted-foreground">{t('loginSubtitle')}</p>
+            <p className="font-didot text-sm text-muted-foreground">{t('loginSubtitle')}</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
