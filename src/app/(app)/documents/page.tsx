@@ -331,7 +331,7 @@ export default function DocumentsPage() {
         <div className="mb-3.5 flex items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 id="recent-title" className="text-base font-semibold tracking-[-0.015em]">
+              <h2 id="recent-title" className="font-didot text-base font-semibold tracking-[-0.015em]">
                 {t('recent')}
               </h2>
               {!docsLoading && <Badge variant="muted" className="px-2 text-[0.6875rem]">{docs.length}</Badge>}

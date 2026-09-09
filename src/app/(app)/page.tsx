@@ -326,7 +326,7 @@ export default function DashboardPage() {
         <section aria-labelledby="open-gaps-title">
           <div className="mb-3 flex items-end justify-between gap-4">
             <div>
-              <h2 id="open-gaps-title" className="text-base font-semibold tracking-[-0.015em]">
+              <h2 id="open-gaps-title" className="font-didot text-base font-semibold tracking-[-0.015em]">
                 {t('attentionTitle')}
               </h2>
               <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('openGapsSubtitle')}</p>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
 
         <aside aria-labelledby="quick-actions-title">
           <div className="mb-3">
-            <h2 id="quick-actions-title" className="text-base font-semibold tracking-[-0.015em]">{t('quickActions')}</h2>
+            <h2 id="quick-actions-title" className="font-didot text-base font-semibold tracking-[-0.015em]">{t('quickActions')}</h2>
             <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('quickActionsHint')}</p>
           </div>
           <div className="overflow-hidden rounded-[0.875rem] bg-card p-2 ring-1 ring-border/70">
@@ -428,7 +428,7 @@ export default function DashboardPage() {
 
       <section className="mt-9" aria-labelledby="recent-activity-title">
         <div className="mb-3">
-          <h2 id="recent-activity-title" className="text-base font-semibold tracking-[-0.015em]">{t('recentActivity')}</h2>
+          <h2 id="recent-activity-title" className="font-didot text-base font-semibold tracking-[-0.015em]">{t('recentActivity')}</h2>
           <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{t('recentActivityHint')}</p>
         </div>
 

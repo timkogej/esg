@@ -36,7 +36,7 @@ function SectionHeading({
           <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
         <div>
-          <h2 id={id} className="text-base font-semibold tracking-[-0.015em]">
+          <h2 id={id} className="font-didot text-base font-semibold tracking-[-0.015em]">
             {title}
           </h2>
           <p className="mt-0.5 text-[0.8125rem] leading-5 text-muted-foreground">{description}</p>

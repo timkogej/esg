@@ -113,7 +113,7 @@ export default function DownloadsPage() {
           <section aria-labelledby="reports-title">
             <div className="mb-2.5">
               <div className="flex items-center gap-2">
-                <h2 id="reports-title" className="text-base font-semibold tracking-[-0.015em]">
+                <h2 id="reports-title" className="font-didot text-base font-semibold tracking-[-0.015em]">
                   {t('reports')}
                 </h2>
                 <Badge variant="muted" className="px-2 text-[0.6875rem]">
@@ -175,7 +175,7 @@ export default function DownloadsPage() {
               <div className="flex items-center gap-2">
                 <h2
                   id="questionnaires-title"
-                  className="text-base font-semibold tracking-[-0.015em]"
+                  className="font-didot text-base font-semibold tracking-[-0.015em]"
                 >
                   {t('questionnaires')}
                 </h2>
