@@ -54,7 +54,7 @@ export function Sidebar() {
             href="/"
             className="rounded-md transition-opacity duration-150 ease-out hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
           >
-            <Brand className="text-lg" />
+            <Brand className="w-[132px]" />
           </Link>
         )}
         <Button

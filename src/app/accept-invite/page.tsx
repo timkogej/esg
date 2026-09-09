@@ -117,7 +117,7 @@ export default function AcceptInvitePage() {
       </div>
 
       <div className="mb-8 text-center">
-        <Brand className="text-4xl" />
+        <Brand className="w-[220px] sm:w-[236px]" />
       </div>
 
       <Card className="w-full max-w-sm border-border/70 bg-card/80 backdrop-blur">
