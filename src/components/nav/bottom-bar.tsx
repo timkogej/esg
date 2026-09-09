@@ -32,7 +32,7 @@ export function BottomBar() {
             key={item.href}
             href={item.href}
             className={cn(
-              'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1.5 text-[0.625rem] font-medium transition-[color,background-color,transform,box-shadow] duration-200 ease-out active:scale-[0.96] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+              'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1.5 text-[0.625rem] font-medium transition-[color,background-color,transform,box-shadow] duration-200 ease-out active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
               active
                 ? '-translate-y-px bg-brand text-white shadow-sm'
                 : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',

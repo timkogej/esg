@@ -19,7 +19,12 @@ export function ThemeToggle({ showLabel = false }: { showLabel?: boolean }) {
 
   if (showLabel) {
     return (
-      <Button variant="outline" onClick={toggle} className="w-full justify-start gap-2" aria-pressed={isDark}>
+      <Button
+        variant="outline"
+        onClick={toggle}
+        className="w-full justify-start gap-2"
+        aria-pressed={mounted ? isDark : undefined}
+      >
         {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         {mounted ? (isDark ? t('light') : t('dark')) : t('theme')}
       </Button>
@@ -27,7 +32,13 @@ export function ThemeToggle({ showLabel = false }: { showLabel?: boolean }) {
   }
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label={t('theme')} aria-pressed={isDark}>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggle}
+      aria-label={t('theme')}
+      aria-pressed={mounted ? isDark : undefined}
+    >
       {mounted && isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>
   );

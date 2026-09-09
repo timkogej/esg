@@ -105,7 +105,10 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 text-center">
-            <Link href="/reset-password" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/reset-password"
+              className="rounded-md text-sm text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
+            >
               {t('forgotPassword')}
             </Link>
           </div>

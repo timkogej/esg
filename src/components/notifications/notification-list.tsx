@@ -30,7 +30,7 @@ export function NotificationList({
           <li
             key={n.id}
             className={cn(
-              'rounded-lg border p-3 transition-colors',
+              'rounded-lg border p-3 transition-colors duration-150 ease-out motion-reduce:transition-none',
               unread ? 'border-accent/40 bg-accent/5' : 'bg-card',
             )}
           >
@@ -49,7 +49,7 @@ export function NotificationList({
               <button
                 type="button"
                 onClick={() => void onMarkRead(n.id)}
-                className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="mt-2 rounded-md text-xs font-medium text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
               >
                 {t('markRead')}
               </button>

@@ -10,7 +10,7 @@ const SelectField = React.forwardRef<
     <select
       ref={ref}
       className={cn(
-        'flex h-10 w-full appearance-none rounded-lg border border-input bg-card py-2 pl-3 pr-9 text-sm transition-[border-color,box-shadow,background-color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-10 w-full appearance-none rounded-lg border border-input bg-card py-2 pl-3 pr-9 text-sm transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-foreground/30 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-input',
         className,
       )}
       {...props}

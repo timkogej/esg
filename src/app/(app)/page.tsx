@@ -408,13 +408,19 @@ export default function DashboardPage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Link href="/data" className="mt-1.5 flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-colors hover:bg-secondary">
+            <Link
+              href="/data"
+              className="group mt-1.5 flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-[background-color,transform] duration-150 ease-out hover:bg-secondary active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none"
+            >
               <span className="flex items-center gap-2"><Database className="h-4 w-4 text-muted-foreground" />{t('reviewData')}</span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
             </Link>
-            <Link href="/downloads" className="flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-colors hover:bg-secondary">
+            <Link
+              href="/downloads"
+              className="group flex h-10 items-center justify-between rounded-lg px-3 text-[0.8125rem] font-medium transition-[background-color,transform] duration-150 ease-out hover:bg-secondary active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none"
+            >
               <span className="flex items-center gap-2"><Download className="h-4 w-4 text-muted-foreground" />{t('openDownloads')}</span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
             </Link>
           </div>
         </aside>
@@ -439,7 +445,7 @@ export default function DashboardPage() {
             <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
               <div className="flex h-11 items-center justify-between border-b border-border/70 px-4">
                 <h3 className="text-[0.8125rem] font-semibold">{t('recentDocuments')}</h3>
-                <Link href="/documents" className="text-[0.6875rem] font-medium text-muted-foreground hover:text-foreground">{t('viewAll')}</Link>
+                <Link href="/documents" className="rounded-md text-[0.6875rem] font-medium text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card motion-reduce:transition-none">{t('viewAll')}</Link>
               </div>
               {recentDocuments.length === 0 ? (
                 <p className="px-4 py-6 text-[0.6875rem] text-muted-foreground">{t('noRecentDocuments')}</p>
@@ -458,7 +464,7 @@ export default function DashboardPage() {
             <div className="overflow-hidden rounded-[0.875rem] bg-card ring-1 ring-border/70">
               <div className="flex h-11 items-center justify-between border-b border-border/70 px-4">
                 <h3 className="text-[0.8125rem] font-semibold">{t('recentApproved')}</h3>
-                <Link href="/data" className="text-[0.6875rem] font-medium text-muted-foreground hover:text-foreground">{t('viewAll')}</Link>
+                <Link href="/data" className="rounded-md text-[0.6875rem] font-medium text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card motion-reduce:transition-none">{t('viewAll')}</Link>
               </div>
               {recent.length === 0 ? (
                 <p className="px-4 py-6 text-[0.6875rem] text-muted-foreground">{t('noApprovedValues')}</p>

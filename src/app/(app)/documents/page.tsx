@@ -235,7 +235,7 @@ export default function DocumentsPage() {
         >
           <div
             className={cn(
-              'mb-2.5 flex h-10 w-10 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-[0_1px_3px_rgb(0_0_0/0.07)] transition-[color,transform] duration-200 ease-out',
+              'mb-2.5 flex h-10 w-10 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-[0_1px_3px_rgb(0_0_0/0.07)] transition-[color,transform] duration-200 ease-out group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none',
               dragging && 'scale-[1.04] text-brand-text',
             )}
           >

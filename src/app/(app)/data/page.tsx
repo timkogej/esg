@@ -313,7 +313,7 @@ export default function DataPage() {
                             {item.sourceFilename && item.sourceStoragePath ? (
                               <button
                                 type="button"
-                                className="truncate underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="truncate rounded-sm underline-offset-2 transition-colors duration-150 ease-out hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
                                 onClick={() =>
                                   void downloadFromStorage(
                                     item.sourceStoragePath!,

@@ -50,7 +50,10 @@ export function Sidebar() {
     >
       <div className={cn('flex h-[72px] items-center px-4', collapsed ? 'justify-center' : 'justify-between')}>
         {!collapsed && (
-          <Link href="/">
+          <Link
+            href="/"
+            className="rounded-md transition-opacity duration-150 ease-out hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
+          >
             <Brand className="text-lg" />
           </Link>
         )}
@@ -80,7 +83,7 @@ export function Sidebar() {
               title={t(item.labelKey)}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150',
+                'relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
                 active
                   ? 'bg-secondary text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand'
                   : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
@@ -98,7 +101,7 @@ export function Sidebar() {
           title={t('settings')}
           aria-current={isActive('/settings') ? 'page' : undefined}
           className={cn(
-            'relative mt-1 flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150',
+            'relative mt-1 flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
             isActive('/settings')
               ? 'bg-secondary text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand'
               : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
