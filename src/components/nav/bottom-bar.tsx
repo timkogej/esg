@@ -7,8 +7,8 @@ import { PRIMARY_NAV } from '@/components/nav/nav-items';
 import { MoreSheet } from '@/components/nav/more-sheet';
 import { cn } from '@/lib/utils';
 
-// Mobile-only bottom navigation with exactly 5 slots: Home, Documents, Data,
-// Downloads, More. Uses the "liquid glass" surface (.glass-bar) — mobile only.
+// Mobile-only floating dock with exactly 5 slots: Home, Documents, Data,
+// Downloads and More.
 export function BottomBar() {
   const t = useTranslations('nav');
   const pathname = usePathname();
@@ -20,7 +20,10 @@ export function BottomBar() {
   const moreActive = pathname.startsWith('/settings') || pathname.startsWith('/notifications');
 
   return (
-    <nav className="glass-bar fixed inset-x-0 bottom-0 z-40 flex h-16 items-stretch pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav
+      className="glass-bar fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto flex h-[4.25rem] max-w-[35rem] items-stretch gap-1 rounded-[1.375rem] p-1.5 md:hidden"
+      aria-label={t('mobileNavigation')}
+    >
       {PRIMARY_NAV.map((item) => {
         const active = isActive(item.href);
         const Icon = item.icon;
@@ -29,14 +32,15 @@ export function BottomBar() {
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors',
-              active ? 'text-accent' : 'text-muted-foreground',
+              'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1.5 text-[0.625rem] font-medium transition-[color,background-color,transform,box-shadow] duration-200 ease-out active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
+              active
+                ? '-translate-y-px bg-brand text-white shadow-sm'
+                : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
             )}
+            aria-current={active ? 'page' : undefined}
           >
-            <span className={cn('rounded-full p-1', active && 'bg-accent text-white dark:text-accent-foreground')}>
-              <Icon className="h-5 w-5" />
-            </span>
-            {t(item.labelKey)}
+            <Icon aria-hidden="true" className="h-[1.125rem] w-[1.125rem]" strokeWidth={active ? 2.2 : 1.8} />
+            <span className="max-w-full truncate">{t(item.labelKey)}</span>
           </Link>
         );
       })}

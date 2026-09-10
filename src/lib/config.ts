@@ -3,7 +3,7 @@
 export const APP_NAME = 'ESG Portal';
 
 // Accent color used as the single highlight across the app.
-export const ACCENT_HEX = '#D4643F';
+export const ACCENT_HEX = '#FE7001';
 
 // Cookie that carries the active locale (read by next-intl on the server).
 export const LOCALE_COOKIE = 'NEXT_LOCALE';

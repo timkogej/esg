@@ -117,7 +117,7 @@ export default function AcceptInvitePage() {
       </div>
 
       <div className="mb-8 text-center">
-        <Brand className="text-4xl" />
+        <Brand className="w-[220px] sm:w-[236px]" />
       </div>
 
       <Card className="w-full max-w-sm border-border/70 bg-card/80 backdrop-blur">
@@ -131,7 +131,7 @@ export default function AcceptInvitePage() {
 
           {state === 'invalid' && (
             <div className="space-y-3 text-center">
-              <h1 className="font-display text-xl font-bold" style={{ fontWeight: 700 }}>
+              <h1 className="font-didot text-xl font-normal">
                 {t('linkInvalidTitle')}
               </h1>
               <p className="text-sm text-muted-foreground">{t('linkInvalidBody')}</p>
@@ -140,7 +140,7 @@ export default function AcceptInvitePage() {
 
           {state === 'done' && (
             <div className="space-y-4 text-center">
-              <h1 className="font-display text-xl font-bold" style={{ fontWeight: 700 }}>
+              <h1 className="font-didot text-xl font-normal">
                 {t('passwordSetSuccess')}
               </h1>
               <Button variant="accent" className="w-full" onClick={() => router.push('/login')}>
@@ -152,10 +152,10 @@ export default function AcceptInvitePage() {
           {state === 'ready' && (
             <>
               <div className="mb-6 space-y-1">
-                <h1 className="font-display text-2xl font-bold" style={{ fontWeight: 700 }}>
+                <h1 className="font-didot text-2xl font-normal">
                   {t('acceptInviteTitle')}
                 </h1>
-                <p className="text-sm text-muted-foreground">{t('acceptInviteSubtitle')}</p>
+                <p className="font-didot text-sm text-muted-foreground">{t('acceptInviteSubtitle')}</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">

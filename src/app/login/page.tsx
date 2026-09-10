@@ -57,16 +57,16 @@ export default function LoginPage() {
       </div>
 
       <div className="mb-8 text-center">
-        <Brand className="text-4xl" />
+        <Brand className="w-[220px] sm:w-[236px]" />
       </div>
 
       <Card className="w-full max-w-sm border-border/70 bg-card/80 backdrop-blur">
         <CardContent className="pt-6">
           <div className="mb-6 space-y-1">
-            <h1 className="font-display text-2xl font-bold" style={{ fontWeight: 700 }}>
+            <h1 className="font-didot text-2xl font-normal">
               {t('loginTitle')}
             </h1>
-            <p className="text-sm text-muted-foreground">{t('loginSubtitle')}</p>
+            <p className="font-didot text-sm text-muted-foreground">{t('loginSubtitle')}</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
@@ -105,7 +105,10 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 text-center">
-            <Link href="/reset-password" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              href="/reset-password"
+              className="rounded-md text-sm text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
+            >
               {t('forgotPassword')}
             </Link>
           </div>

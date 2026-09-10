@@ -44,14 +44,17 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'sticky top-0 hidden h-dvh shrink-0 flex-col border-r bg-background transition-[width] duration-200 md:flex',
-        collapsed ? 'w-16' : 'w-64',
+        'sticky top-0 hidden h-dvh shrink-0 flex-col border-r bg-secondary/50 transition-[width] duration-200 ease-out md:flex',
+        collapsed ? 'w-[72px]' : 'w-[248px]',
       )}
     >
-      <div className={cn('flex h-16 items-center px-4', collapsed ? 'justify-center' : 'justify-between')}>
+      <div className={cn('flex h-[72px] items-center px-4', collapsed ? 'justify-center' : 'justify-between')}>
         {!collapsed && (
-          <Link href="/">
-            <Brand className="text-xl" />
+          <Link
+            href="/"
+            className="rounded-md transition-opacity duration-150 ease-out hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
+          >
+            <Brand className="w-[132px]" />
           </Link>
         )}
         <Button
@@ -59,6 +62,7 @@ export function Sidebar() {
           size="icon"
           onClick={toggle}
           aria-label={collapsed ? t('expand') : t('collapse')}
+          aria-expanded={!collapsed}
         >
           {mounted && collapsed ? (
             <PanelLeftOpen className="h-5 w-5" />
@@ -77,15 +81,16 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               title={t(item.labelKey)}
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                'relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
                 active
-                  ? 'bg-accent text-white dark:text-accent-foreground'
+                  ? 'bg-secondary text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand'
                   : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 collapsed && 'justify-center px-0',
               )}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className={cn('h-[18px] w-[18px] shrink-0', active && 'text-brand-text')} />
               {!collapsed && <span>{t(item.labelKey)}</span>}
             </Link>
           );
@@ -94,15 +99,16 @@ export function Sidebar() {
         <Link
           href="/settings"
           title={t('settings')}
+          aria-current={isActive('/settings') ? 'page' : undefined}
           className={cn(
-            'mt-1 flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+            'relative mt-1 flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none',
             isActive('/settings')
-              ? 'bg-accent text-white dark:text-accent-foreground'
+              ? 'bg-secondary text-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand'
               : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
             collapsed && 'justify-center px-0',
           )}
         >
-          <Settings className="h-5 w-5 shrink-0" />
+          <Settings className={cn('h-[18px] w-[18px] shrink-0', isActive('/settings') && 'text-brand-text')} />
           {!collapsed && <span>{t('settings')}</span>}
         </Link>
       </nav>

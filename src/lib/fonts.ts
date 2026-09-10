@@ -1,4 +1,4 @@
-import { Inter, GFS_Didot } from 'next/font/google';
+import { GFS_Didot, Inter } from 'next/font/google';
 
 // Inter — everything: body text, forms, tables, buttons, navigation.
 export const inter = Inter({
@@ -7,11 +7,10 @@ export const inter = Inter({
   display: 'swap',
 });
 
-// GFS Didot — display only: h1, app name/logo, hero text, large emphasized numbers.
-// GFS Didot ships a single weight (400); we render it bold via CSS where needed.
-export const didot = GFS_Didot({
-  subsets: ['greek'],
+// GFS Didot — reserved for a small number of editorial dashboard highlights.
+export const gfsDidot = GFS_Didot({
+  subsets: ['latin'],
   weight: '400',
-  variable: '--font-didot',
+  variable: '--font-gfs-didot',
   display: 'swap',
 });

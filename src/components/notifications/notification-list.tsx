@@ -1,8 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { BellOff } from 'lucide-react';
 import type { PortalNotification } from '@/lib/supabase/types';
 import { Badge } from '@/components/ui/badge';
+import { StatePanel } from '@/components/ui/state-panel';
 import { cn } from '@/lib/utils';
 
 export function NotificationList({
@@ -15,7 +17,9 @@ export function NotificationList({
   const t = useTranslations('notifications');
 
   if (items.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">{t('empty')}</p>;
+    return (
+      <StatePanel icon={BellOff} title={t('empty')} description={t('emptyHint')} />
+    );
   }
 
   return (
@@ -26,7 +30,7 @@ export function NotificationList({
           <li
             key={n.id}
             className={cn(
-              'rounded-lg border p-3 transition-colors',
+              'rounded-lg border p-3 transition-colors duration-150 ease-out motion-reduce:transition-none',
               unread ? 'border-accent/40 bg-accent/5' : 'bg-card',
             )}
           >
@@ -45,7 +49,7 @@ export function NotificationList({
               <button
                 type="button"
                 onClick={() => void onMarkRead(n.id)}
-                className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="mt-2 rounded-md text-xs font-medium text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
               >
                 {t('markRead')}
               </button>

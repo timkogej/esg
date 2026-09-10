@@ -73,7 +73,7 @@ Orange is not used for large navigation fills, decorative lines, every status, p
 
 ### Token implementation
 
-The current code stores complete `oklch(...)` values in variables but wraps them with `hsl(var(...))` in Tailwind. The redesign must use direct `var(--token)` references for complete OKLCH colors, or store channel-only HSL values. Do not mix the formats.
+The previous code stored complete `oklch(...)` values in variables but wrapped them with `hsl(var(...))` in Tailwind. The redesign uses RGB channel variables with `rgb(var(--token) / <alpha-value>)`, keeping opacity modifiers valid and the format consistent.
 
 ## Typography
 

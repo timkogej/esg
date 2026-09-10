@@ -1,14 +1,34 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { APP_NAME } from '@/lib/config';
 
-// App wordmark — rendered in GFS Didot (display font), bold.
-export function Brand({ className, collapsed = false }: { className?: string; collapsed?: boolean }) {
+export function Brand({ className }: { className?: string }) {
   return (
     <span
-      className={cn('font-display font-bold tracking-tight text-foreground', className)}
-      style={{ fontWeight: 700 }}
+      className={cn('inline-flex w-36 select-none items-center', className)}
+      role="img"
+      aria-label={APP_NAME}
     >
-      {collapsed ? APP_NAME.charAt(0) : APP_NAME}
+      <Image
+        src="/brand/evipace-logo-horizontal.svg"
+        alt=""
+        aria-hidden="true"
+        width={1347}
+        height={320}
+        priority
+        draggable={false}
+        className="block h-auto w-full dark:hidden"
+      />
+      <Image
+        src="/brand/evipace-logo-horizontal-white.svg"
+        alt=""
+        aria-hidden="true"
+        width={1347}
+        height={320}
+        priority
+        draggable={false}
+        className="hidden h-auto w-full dark:block"
+      />
     </span>
   );
 }

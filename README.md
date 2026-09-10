@@ -42,12 +42,11 @@ docker run -p 3000:3000 esg-portal
 
 ## Design system
 
-- Black/white, high-contrast, minimal. Single accent **`#D4643F`** (brick orange) — used
-  for CTAs, active nav, progress, badges. **No green anywhere** (deliberate).
-- Ambient glow radiating up from the bottom edge (`src/components/ambient-glow.tsx`),
-  subtler in light, stronger in dark.
-- **GFS Didot** (display) only for h1 / wordmark / hero / big numbers; **Inter** for
-  everything else.
+- Warm neutral, high-contrast product UI. Brand accent **`#FE7001`** is reserved for
+  primary actions, compact active indicators and progress. Semantic colors remain separate.
+- No ambient glow or decorative page gradient. Elevation is reserved for floating surfaces.
+- **Inter** is used throughout the product UI. The final Evipace wordmark will remain a
+  separate vector brand asset.
 - Desktop: collapsible solid sidebar (state in localStorage). Mobile: bottom bar with a
   liquid-glass surface (`.glass-bar`) and exactly 5 slots — Home, Documents, Data,
   Downloads, More.
@@ -94,7 +93,7 @@ src/
     notifications/        bell (+ unread badge) and list
     dashboard/            gap-resolve dialog
     documents/            status badge
-    ambient-glow, brand, theme-toggle, language-switcher, page-header,
+    brand, theme-toggle, language-switcher, page-header,
     auth-guard, locale-sync, providers, theme-provider
   lib/
     config.ts             APP_NAME, accent, locales, poll/TTL constants

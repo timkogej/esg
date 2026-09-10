@@ -2,7 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, Pencil, FileText, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Database,
+  FileText,
+  Loader2,
+  Pencil,
+  ShieldCheck,
+} from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import type {
@@ -10,11 +21,13 @@ import type {
   FrameworkDatapoint,
   NewClientAttestation,
 } from '@/lib/supabase/types';
-import { PageHeader } from '@/components/page-header';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListRow } from '@/components/ui/list-row';
+import { ListSkeleton } from '@/components/ui/list-skeleton';
+import { StatePanel } from '@/components/ui/state-panel';
+import { StatusNotice } from '@/components/ui/status-notice';
 import { formatDatapointValue } from '@/lib/datapoint';
 import { downloadFromStorage } from '@/lib/storage';
 
@@ -27,6 +40,7 @@ interface ReviewItem extends ClientDatapointValue {
 
 export default function DataPage() {
   const t = useTranslations('data');
+  const tCommon = useTranslations('common');
   const supabase = getSupabaseBrowserClient();
   const { clientId, contact, session } = useAuth();
 
@@ -36,6 +50,8 @@ export default function DataPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   // Varovalka: true, ko obstajajo datapoint_id-ji za katere ne moremo naložiti
   // labelov iz framework_datapoints. Skoraj vedno pomeni RLS blokado branja te
   // referenčne tabele za prijavljenega uporabnika (poizvedba tiho vrne 0 vrstic).
@@ -47,17 +63,27 @@ export default function DataPage() {
 
     (async () => {
       setLoading(true);
+      setLoadError(false);
 
       // Only values the client can meaningfully confirm. Calculated values
       // (provenance='calculated') are excluded: the client must not attest them and
       // the backend workflow ignores any attestation for those rows anyway.
-      const { data: values } = await supabase
+      const { data: values, error: valuesError } = await supabase
         .from('client_datapoint_values')
         .select('*')
         .eq('client_id', clientId)
         .eq('status', 'needs_review')
         .in('provenance', ['extracted', 'client_entered'])
         .returns<ClientDatapointValue[]>();
+
+      if (valuesError) {
+        if (!cancelled) {
+          setItems([]);
+          setLoadError(true);
+          setLoading(false);
+        }
+        return;
+      }
 
       const rows = values ?? [];
       const dpIds = [...new Set(rows.map((r) => r.datapoint_id).filter(Boolean))];
@@ -141,7 +167,7 @@ export default function DataPage() {
     return () => {
       cancelled = true;
     };
-  }, [supabase, clientId]);
+  }, [supabase, clientId, reloadKey]);
 
   // Group by framework module for a readable overview.
   const grouped = useMemo(() => {
@@ -189,124 +215,181 @@ export default function DataPage() {
   }
 
   return (
-    <div>
-      <PageHeader title={t('title')} subtitle={t('subtitle')} />
+    <div className="mx-auto max-w-[1040px]">
+      <header className="mb-6">
+        <h1 className="font-didot text-[1.625rem] font-normal leading-tight tracking-[-0.025em] md:text-[1.75rem]">
+          {t('title')}
+        </h1>
+        <p className="mt-1 max-w-2xl font-didot text-sm leading-5 text-muted-foreground">{t('subtitle')}</p>
+      </header>
 
       {loading ? (
-        <div className="space-y-3">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
-        </div>
+        <ListSkeleton label={t('loading')} header />
+      ) : loadError ? (
+        <StatePanel
+          icon={AlertTriangle}
+          tone="error"
+          title={t('loadError')}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setReloadKey((key) => key + 1)}>
+              {tCommon('retry')}
+            </Button>
+          }
+        />
       ) : done ? (
-        <Card>
-          <CardContent className="flex items-center gap-3 py-8">
-            <CheckCircle2 className="h-6 w-6 text-accent" />
-            <p className="text-sm">{t('attestSuccess')}</p>
-          </CardContent>
-        </Card>
+        <StatePanel
+          icon={CheckCircle2}
+          tone="success"
+          title={t('attestSuccessTitle')}
+          description={t('attestSuccess')}
+        />
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-sm text-muted-foreground">{t('noPending')}</p>
-          </CardContent>
-        </Card>
+        <StatePanel
+          icon={ShieldCheck}
+          title={t('allClearTitle')}
+          description={t('noPending')}
+          action={<Button asChild variant="secondary" size="sm">
+            <Link href="/documents">
+              {t('goToDocuments')}
+              <ChevronRight aria-hidden="true" />
+            </Link>
+          </Button>}
+        />
       ) : (
         <>
           {labelsMissing && (
-            <Card className="mb-6 border-destructive/50">
-              <CardContent className="flex items-start gap-3 py-4">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-                <p className="text-sm text-destructive">{t('labelsMissingWarning')}</p>
-              </CardContent>
-            </Card>
+            <StatusNotice className="mb-5" icon={AlertTriangle}>
+              <p className="text-[0.8125rem] leading-5">{t('labelsMissingWarning')}</p>
+            </StatusNotice>
           )}
-          <div className="space-y-8">
+
+          <div className="mb-6 flex flex-col gap-3 rounded-[0.875rem] bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text">
+                <Database aria-hidden="true" className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('reviewTitle')}</h2>
+                <p className="mt-0.5 text-[0.8125rem] leading-5 text-muted-foreground">
+                  {t('reviewHint')}
+                </p>
+              </div>
+            </div>
+            <Badge variant="warning" className="self-start px-2 text-[0.6875rem] sm:self-auto">
+              {t('reviewCount', { count: items.length })}
+            </Badge>
+          </div>
+
+          <div className="space-y-7">
             {grouped.map(([moduleName, rows]) => (
-              <section key={moduleName}>
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {moduleName}
-                </h2>
-                <div className="space-y-2">
+              <section key={moduleName} aria-labelledby={`module-${moduleName}`}>
+                <div className="mb-2.5 flex items-center gap-2">
+                  <h2
+                    id={`module-${moduleName}`}
+                    className="text-[0.8125rem] font-semibold text-foreground"
+                  >
+                    {moduleName}
+                  </h2>
+                  <Badge variant="muted" className="px-2 text-[0.6875rem]">{rows.length}</Badge>
+                </div>
+                <div className="overflow-hidden rounded-[0.875rem] bg-card shadow-[0_1px_2px_rgb(0_0_0/0.025)] ring-1 ring-border/70 dark:shadow-none">
                   {rows.map((item) => {
                     const edited = edits[item.id];
                     return (
-                      <Card key={item.id}>
-                        <CardContent className="py-4">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                              {item.label ? (
-                                <p className="font-medium">{item.label}</p>
-                              ) : (
-                                <p className="font-medium text-destructive">
-                                  {t('unknownDatapoint')}
-                                </p>
-                              )}
-                              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                                <span>
-                                  {t('value')}:{' '}
-                                  <span className="font-medium text-foreground">
-                                    {edited !== undefined
-                                      ? edited
-                                      : formatDatapointValue(item)}{' '}
-                                    {item.unit ?? ''}
-                                  </span>
-                                </span>
-                                <span className="inline-flex items-center gap-1">
-                                  <FileText className="h-3.5 w-3.5" />
-                                  {item.sourceFilename && item.sourceStoragePath ? (
-                                    <button
-                                      type="button"
-                                      className="underline underline-offset-2 hover:text-foreground"
-                                      onClick={() =>
-                                        void downloadFromStorage(
-                                          item.sourceStoragePath!,
-                                          item.sourceFilename!,
-                                        )
-                                      }
-                                    >
-                                      {item.sourceFilename}
-                                    </button>
-                                  ) : item.provenance === 'client_entered' ? (
-                                    t('selfEntered')
-                                  ) : (
-                                    t('noSource')
-                                  )}
-                                </span>
-                              </div>
-
-                              {editingId === item.id && (
-                                <div className="mt-3 flex items-center gap-2">
-                                  <Input
-                                    autoFocus
-                                    defaultValue={
-                                      edited !== undefined ? edited : formatDatapointValue(item)
-                                    }
-                                    onChange={(e) =>
-                                      setEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
-                                    }
-                                    className="max-w-xs"
-                                    placeholder={t('editedValue')}
-                                  />
-                                  <Button size="sm" variant="secondary" onClick={() => setEditingId(null)}>
-                                    OK
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="shrink-0"
-                              onClick={() => setEditingId(editingId === item.id ? null : item.id)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                              {t('edit')}
-                            </Button>
+                      <ListRow
+                        key={item.id}
+                        className="group/row block min-h-16 px-4 py-3 transition-colors duration-150 ease-out hover:bg-secondary/25 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(8rem,.35fr)_auto] sm:gap-x-4"
+                      >
+                        <div className="min-w-0">
+                          {item.label ? (
+                            <p className="text-[0.8125rem] font-medium leading-5">{item.label}</p>
+                          ) : (
+                            <p className="text-[0.8125rem] font-medium leading-5 text-destructive">
+                              {t('unknownDatapoint')}
+                            </p>
+                          )}
+                          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+                            <FileText aria-hidden="true" className="h-3 w-3 shrink-0" />
+                            {item.sourceFilename && item.sourceStoragePath ? (
+                              <button
+                                type="button"
+                                className="truncate rounded-sm underline-offset-2 transition-colors duration-150 ease-out hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
+                                onClick={() =>
+                                  void downloadFromStorage(
+                                    item.sourceStoragePath!,
+                                    item.sourceFilename!,
+                                  )
+                                }
+                              >
+                                {item.sourceFilename}
+                              </button>
+                            ) : item.provenance === 'client_entered' ? (
+                              t('selfEntered')
+                            ) : (
+                              t('noSource')
+                            )}
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+
+                        <div className="mt-3 sm:mt-0 sm:text-right">
+                          <p className="text-[0.6875rem] text-muted-foreground sm:sr-only">{t('value')}</p>
+                          <p className="mt-0.5 text-base font-semibold tabular-nums tracking-[-0.01em] sm:mt-0">
+                            {edited !== undefined ? edited : formatDatapointValue(item)}{' '}
+                            {item.unit && (
+                              <span className="text-[0.8125rem] font-normal text-muted-foreground">
+                                {item.unit}
+                              </span>
+                            )}
+                          </p>
+                          {edited !== undefined && (
+                            <span className="mt-0.5 inline-flex items-center gap-1 text-[0.6875rem] text-brand-text">
+                              <Check aria-hidden="true" className="h-3 w-3" />
+                              {t('corrected')}
+                            </span>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 h-8 justify-start px-2 text-xs text-muted-foreground transition-opacity duration-150 hover:text-foreground sm:mt-0 sm:justify-center sm:opacity-0 sm:group-hover/row:opacity-100 sm:group-focus-within/row:opacity-100"
+                          aria-expanded={editingId === item.id}
+                          onClick={() => setEditingId(editingId === item.id ? null : item.id)}
+                        >
+                          <Pencil aria-hidden="true" className="h-4 w-4" />
+                          {t('edit')}
+                        </Button>
+
+                        {editingId === item.id && (
+                          <div className="mt-3 animate-in border-t border-border/70 pt-3 duration-150 fade-in slide-in-from-top-1 sm:col-span-3">
+                            <label htmlFor={`edit-${item.id}`} className="mb-1.5 block text-[0.8125rem] font-medium">
+                              {t('editedValue')}
+                            </label>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                              <Input
+                                id={`edit-${item.id}`}
+                                autoFocus
+                                defaultValue={
+                                  edited !== undefined ? edited : formatDatapointValue(item)
+                                }
+                                onChange={(e) =>
+                                  setEdits((prev) => ({ ...prev, [item.id]: e.target.value }))
+                                }
+                                className="h-9 max-w-sm text-[0.8125rem]"
+                                placeholder={t('editedValue')}
+                              />
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setEditingId(null)}
+                              >
+                                <Check aria-hidden="true" />
+                                {t('doneEditing')}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </ListRow>
                     );
                   })}
                 </div>
@@ -314,16 +397,24 @@ export default function DataPage() {
             ))}
           </div>
 
-          <div className="sticky bottom-20 mt-8 md:bottom-4">
-            <Button
-              variant="accent"
-              size="lg"
-              className="w-full shadow-lg"
-              onClick={() => void attestAll()}
-              disabled={submitting}
-            >
-              {submitting ? t('attesting') : t('attestAll')}
-            </Button>
+          <div className="glass-bar sticky bottom-20 z-20 mt-7 rounded-[0.875rem] px-4 py-3 shadow-[0_8px_28px_rgb(0_0_0/0.09)] ring-1 ring-border/70 md:bottom-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-2.5">
+                <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <p className="text-[0.6875rem] leading-4 text-muted-foreground">
+                  {t('attestStatement')}
+                </p>
+              </div>
+              <Button
+                variant="accent"
+                className="w-full shrink-0 shadow-[0_1px_2px_rgb(0_0_0/0.10)] sm:w-auto"
+                onClick={() => void attestAll()}
+                disabled={submitting}
+              >
+                {submitting && <Loader2 aria-hidden="true" className="animate-spin" />}
+                {submitting ? t('attesting') : t('attestAll')}
+              </Button>
+            </div>
           </div>
         </>
       )}
