@@ -130,6 +130,10 @@ export default function DocumentsPage() {
     [locale],
   );
 
+  // US intake requests live in a separate, server-only bucket (no client Storage policies),
+  // so the signed-URL preview/download below cannot work for them. Hide those actions.
+  const isUsIntake = (storagePath: string) => /^clients\/[^/]+\/us-requests\//.test(storagePath);
+
   async function handlePreview(storagePath: string) {
     const { data } = await supabase.storage
       .from(DOCUMENTS_BUCKET)
@@ -433,7 +437,7 @@ export default function DocumentsPage() {
                     {dateFormatter.format(new Date(doc.created_at))}
                   </span>
                   <div className="flex shrink-0 justify-end gap-0.5 self-start transition-opacity duration-150 ease-out md:self-center md:opacity-0 md:group-hover/row:opacity-100 md:group-focus-within/row:opacity-100">
-                    {isPdf(doc) && (
+                    {!isUsIntake(doc.storage_path) && isPdf(doc) && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -445,6 +449,7 @@ export default function DocumentsPage() {
                         <Eye aria-hidden="true" className="h-4 w-4" />
                       </Button>
                     )}
+                    {!isUsIntake(doc.storage_path) && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -457,6 +462,7 @@ export default function DocumentsPage() {
                     >
                       <Download aria-hidden="true" className="h-4 w-4" />
                     </Button>
+                    )}
                   </div>
                 </ListRow>
               ))}
