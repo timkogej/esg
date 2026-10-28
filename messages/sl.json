@@ -239,5 +239,43 @@
     "address": "Naslov",
     "reportingPeriod": "Obdobje poročanja",
     "readOnlyNote": "Podatki o podjetju so trenutno samo za ogled."
+  },
+  "usRequests": {
+    "title": "ZDA: zahtevki kupcev",
+    "subtitle": "Naložite vprašalnik ameriškega kupca; preverimo ga in pripravimo za odgovore.",
+    "addTitle": "Nov zahtevek",
+    "addHint": "Excel, Word ali PDF, do 10 MB",
+    "chooseFile": "Izberi datoteko",
+    "uploading": "Nalaganje …",
+    "privacyNote": "Datoteka se shrani ločeno od ostalih dokumentov in je ne pošljemo nikomur brez vašega potrdila.",
+    "retryUpload": "Poskusi znova: {name}",
+    "loading": "Nalaganje zahtevkov",
+    "loadError": "Zahtevkov trenutno ni mogoče prikazati.",
+    "notEnabledTitle": "Ta funkcija za vas še ni vključena",
+    "notEnabledHint": "Če želite oddajati zahtevke ameriških kupcev, se obrnite na Evipace.",
+    "recent": "Vaši zahtevki",
+    "recentHint": "Spremljajte, kako napreduje obdelava.",
+    "noRequests": "Zahtevkov še ni.",
+    "emptyHint": "Naložite prvi vprašalnik zgoraj.",
+    "requestLabel": "Zahtevek {id}",
+    "stage": {
+      "waiting": "Čaka na datoteko",
+      "stalled": "Prekinjeno?",
+      "received": "Prejeto",
+      "ready": "Vprašalnik pripravljen"
+    },
+    "stageHint": {
+      "waiting": "Datoteko nalagamo in preverjamo.",
+      "stalled": "Nalaganje se je morda prekinilo. Naložite datoteko znova.",
+      "received": "Datoteka je preverjena, vprašalnik pregledujemo.",
+      "ready": "Vprašalnik je pripravljen za odgovore."
+    },
+    "errType": "Podprte so datoteke Excel (.xlsx), Word (.docx) in PDF.",
+    "errSize": "Datoteka je prevelika (največ 10 MB).",
+    "errEmpty": "Datoteka je prazna.",
+    "errNotEnabled": "Za oddajo zahtevkov nimate dovoljenja.",
+    "errInvalid": "Zahtevka ni mogoče oddati. Poskusite znova.",
+    "errConflict": "Zahtevek že obstaja. Osvežite stran.",
+    "errUpload": "Nalaganje ni uspelo. Poskusite znova."
   }
 }

@@ -239,5 +239,43 @@
     "address": "Adresse",
     "reportingPeriod": "Berichtszeitraum",
     "readOnlyNote": "Unternehmensdaten sind derzeit schreibgeschützt."
+  },
+  "usRequests": {
+    "title": "US-Käuferanfragen",
+    "subtitle": "Laden Sie einen Fragebogen eines US-Käufers hoch; wir prüfen ihn und bereiten ihn für Antworten vor.",
+    "addTitle": "Neue Anfrage",
+    "addHint": "Excel, Word oder PDF, bis 10 MB",
+    "chooseFile": "Datei auswählen",
+    "uploading": "Wird hochgeladen …",
+    "privacyNote": "Die Datei wird getrennt von Ihren übrigen Dokumenten gespeichert und nie ohne Ihre Freigabe weitergegeben.",
+    "retryUpload": "Erneut versuchen: {name}",
+    "loading": "Anfragen werden geladen",
+    "loadError": "Anfragen können derzeit nicht angezeigt werden.",
+    "notEnabledTitle": "Diese Funktion ist für Sie noch nicht aktiviert",
+    "notEnabledHint": "Um US-Käuferanfragen einzureichen, wenden Sie sich bitte an Evipace.",
+    "recent": "Ihre Anfragen",
+    "recentHint": "Verfolgen Sie den Stand der Bearbeitung.",
+    "noRequests": "Noch keine Anfragen.",
+    "emptyHint": "Laden Sie oben Ihren ersten Fragebogen hoch.",
+    "requestLabel": "Anfrage {id}",
+    "stage": {
+      "waiting": "Wartet auf Datei",
+      "stalled": "Unterbrochen?",
+      "received": "Eingegangen",
+      "ready": "Fragebogen bereit"
+    },
+    "stageHint": {
+      "waiting": "Wir laden die Datei hoch und prüfen sie.",
+      "stalled": "Der Upload wurde möglicherweise unterbrochen. Bitte laden Sie die Datei erneut hoch.",
+      "received": "Die Datei ist geprüft, der Fragebogen wird durchgesehen.",
+      "ready": "Der Fragebogen ist bereit für Antworten."
+    },
+    "errType": "Unterstützt werden Excel (.xlsx), Word (.docx) und PDF.",
+    "errSize": "Die Datei ist zu groß (maximal 10 MB).",
+    "errEmpty": "Die Datei ist leer.",
+    "errNotEnabled": "Sie dürfen keine Anfragen einreichen.",
+    "errInvalid": "Die Anfrage kann nicht eingereicht werden. Bitte erneut versuchen.",
+    "errConflict": "Diese Anfrage existiert bereits. Seite aktualisieren.",
+    "errUpload": "Upload fehlgeschlagen. Bitte erneut versuchen."
   }
 }

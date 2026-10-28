@@ -239,5 +239,43 @@
     "address": "Address",
     "reportingPeriod": "Reporting period",
     "readOnlyNote": "Company information is read-only for now."
+  },
+  "usRequests": {
+    "title": "US buyer requests",
+    "subtitle": "Upload a questionnaire from a US buyer; we check it and prepare it for answers.",
+    "addTitle": "New request",
+    "addHint": "Excel, Word or PDF, up to 10 MB",
+    "chooseFile": "Choose file",
+    "uploading": "Uploading …",
+    "privacyNote": "The file is stored separately from your other documents and is never sent to anyone without your approval.",
+    "retryUpload": "Retry: {name}",
+    "loading": "Loading requests",
+    "loadError": "Requests cannot be displayed right now.",
+    "notEnabledTitle": "This feature is not enabled for you yet",
+    "notEnabledHint": "To submit US buyer requests, please contact Evipace.",
+    "recent": "Your requests",
+    "recentHint": "Follow how processing is going.",
+    "noRequests": "No requests yet.",
+    "emptyHint": "Upload your first questionnaire above.",
+    "requestLabel": "Request {id}",
+    "stage": {
+      "waiting": "Waiting for file",
+      "stalled": "Interrupted?",
+      "received": "Received",
+      "ready": "Questionnaire ready"
+    },
+    "stageHint": {
+      "waiting": "We are uploading and checking the file.",
+      "stalled": "The upload may have been interrupted. Please upload the file again.",
+      "received": "The file is verified and the questionnaire is being reviewed.",
+      "ready": "The questionnaire is ready for answers."
+    },
+    "errType": "Supported files are Excel (.xlsx), Word (.docx) and PDF.",
+    "errSize": "The file is too large (10 MB maximum).",
+    "errEmpty": "The file is empty.",
+    "errNotEnabled": "You are not allowed to submit requests.",
+    "errInvalid": "The request cannot be submitted. Please try again.",
+    "errConflict": "This request already exists. Refresh the page.",
+    "errUpload": "Upload failed. Please try again."
   }
 }
